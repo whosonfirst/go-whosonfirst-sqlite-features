@@ -6,7 +6,6 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-log"
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"io"
-	// golog "log"
 	"sync"
 	"sync/atomic"
 	"time"

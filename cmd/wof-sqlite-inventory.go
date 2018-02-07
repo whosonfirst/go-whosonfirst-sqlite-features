@@ -7,7 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/dustin/go-humanize"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/assets/html"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/assets/html"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/database"
 	"html/template"
 	"io/ioutil"
