@@ -12,10 +12,6 @@ make bin
 
 All of this package's dependencies are bundled with the code in the `vendor` directory.
 
-## Important
-
-TOO SOON. NOT YET. NO, REALLY.
-
 ## Tables
 
 ### ancestors
@@ -150,7 +146,7 @@ CREATE INDEX spr_by_superseding ON spr (is_superseding, lastmodified);
 
 ## Custom tables
 
-Sure. You just need to write a per-table package that implements the `Table` interface as described in [go-whosonfirst-sqlite]().
+Sure. You just need to write a per-table package that implements the `Table` interface as described in [go-whosonfirst-sqlite](https://github.com/whosonfirst/go-whosonfirst-sqlite#custom-tables).
 
 ## Tools
 
@@ -190,19 +186,19 @@ Usage of ./bin/wof-sqlite-index:
 For example:
 
 ```
-./bin/wof-sqlite-index -live-hard-die-fast -dsn microhoods.db -all -mode meta /usr/local/data/whosonfirst-data/meta/wof-microhood-latest.csv
+./bin/wof-sqlite-index-features -live-hard-die-fast -dsn microhoods.db -all -mode meta /usr/local/data/whosonfirst-data/meta/wof-microhood-latest.csv
 ```
 
 See the way we're passing a `-live-hard-die-fast` flag? That is to enable a number of performace-related PRAGMA commands (described [here](https://blog.devart.com/increasing-sqlite-performance.html) and [here](https://www.gaia-gis.it/gaia-sins/spatialite-cookbook/html/system.html)) without which database index can be prohibitive and time-consuming. These is a small but unlikely chance of database corruptions when this flag is enabled.
 
 Also note that the `-live-hard-die-fast` flag will cause the `PAGE_SIZE` and `CACHE_SIZE` PRAGMAs to be set to `4096` and `1000000` respectively so the eventual cache size will require 4GB of memory. This is probably fine on most systems where you'll be indexing data but I am open to the idea that we may need to revisit those numbers or at least make them configurable.
 
-You can also use `wof-sqlite-index` in combination with the [go-whosonfirst-api](https://github.com/whosonfirst/go-whosonfirst-api) `wof-api` tool and populate your SQLite database by piping API results on STDIN. For example, here's how you might index all the neighbourhoods in Montreal:
+You can also use `wof-sqlite-index-features` in combination with the [go-whosonfirst-api](https://github.com/whosonfirst/go-whosonfirst-api) `wof-api` tool and populate your SQLite database by piping API results on STDIN. For example, here's how you might index all the neighbourhoods in Montreal:
 
 ```
 /usr/local/bin/wof-api -param method=whosonfirst.places.getDescendants -param id=101736545 \
 -param placetype=neighbourhood -param api_key=mapzen-xxxxxx -geojson-ls | \
-/usr/local/bin/wof-sqlite-index -dsn neighbourhoods.db -all -mode geojson-ls STDIN
+/usr/local/bin/wof-sqlite-index-features -dsn neighbourhoods.db -all -mode geojson-ls STDIN
 ```
 
 Or creating databases for all the Who's On First repos:
@@ -227,7 +223,7 @@ do
 	rm /usr/local/data/whosonfirst-sqlite/${FNAME}.db
     fi
 
-    ./bin/wof-sqlite-index -timings -live-hard-die-fast -all -dsn /usr/local/data/whosonfirst-sqlite/${FNAME}-latest.db -mode repo ${REPO} 
+    ./bin/wof-sqlite-index-features -timings -live-hard-die-fast -all -dsn /usr/local/data/whosonfirst-sqlite/${FNAME}-latest.db -mode repo ${REPO} 
 
 done
 ```    
@@ -237,10 +233,10 @@ done
 Yes, if you have the [Spatialite extension](https://www.gaia-gis.it/fossil/libspatialite/index) installed and have indexed the `geometries` table. For example:
 
 ```
-> ./bin/wof-sqlite-index -timings -live-hard-die-fast -spr -geometries -driver spatialite -mode repo -dsn test.db /usr/local/data/whosonfirst-data-constituency-ca/
-10:09:46.534281 [wof-sqlite-index] STATUS time to index geometries (87) : 21.251828704s
-10:09:46.534379 [wof-sqlite-index] STATUS time to index spr (87) : 3.206930799s
-10:09:46.534385 [wof-sqlite-index] STATUS time to index all (87) : 24.48004637s
+> ./bin/wof-sqlite-index-features -timings -live-hard-die-fast -spr -geometries -driver spatialite -mode repo -dsn test.db /usr/local/data/whosonfirst-data-constituency-ca/
+10:09:46.534281 [wof-sqlite-index-features] STATUS time to index geometries (87) : 21.251828704s
+10:09:46.534379 [wof-sqlite-index-features] STATUS time to index spr (87) : 3.206930799s
+10:09:46.534385 [wof-sqlite-index-features] STATUS time to index all (87) : 24.48004637s
 
 > sqlite3 test.db
 SQLite version 3.21.0 2017-10-24 18:55:49
@@ -284,15 +280,15 @@ _Remember: When indexing geometries you will need to explcitly pass both the `-g
 Indexing time will vary depending on the specifics of your hardware (available RAM, CPU, disk I/O) but as a rule building indexes with the `geometries` table will take longer, and create a larger database, than doing so without. For example indexing the [whosonfirst-data](https://github.com/whosonfirst-data/whosonfirst-data) repository with spatial indexes:
 
 ```
-> ./bin/wof-sqlite-index -all -driver spatialite -geometries -dsn /usr/local/data/dist/sqlite/whosonfirst-data-latest.db -live-hard-die-fast -timings -mode repo /usr/local/data/whosonfirst-data
+> ./bin/wof-sqlite-index-features -all -driver spatialite -geometries -dsn /usr/local/data/dist/sqlite/whosonfirst-data-latest.db -live-hard-die-fast -timings -mode repo /usr/local/data/whosonfirst-data
 ...time passes...
-06:12:51.274132 [wof-sqlite-index] STATUS time to index geojson (951541) : 13m41.994217581s
-06:12:51.274158 [wof-sqlite-index] STATUS time to index spr (951541) : 13m0.21007633s
-06:12:51.274173 [wof-sqlite-index] STATUS time to index names (951541) : 17m50.759093941s
-06:12:51.274178 [wof-sqlite-index] STATUS time to index ancestors (951541) : 3m37.431723948s
-06:12:51.274182 [wof-sqlite-index] STATUS time to index concordances (951541) : 2m36.737857568s
-06:12:51.274187 [wof-sqlite-index] STATUS time to index geometries (951541) : 43m48.39054903s
-06:12:51.274192 [wof-sqlite-index] STATUS time to index all (951541) : 4h41m45.492361401s
+06:12:51.274132 [wof-sqlite-index-features] STATUS time to index geojson (951541) : 13m41.994217581s
+06:12:51.274158 [wof-sqlite-index-features] STATUS time to index spr (951541) : 13m0.21007633s
+06:12:51.274173 [wof-sqlite-index-features] STATUS time to index names (951541) : 17m50.759093941s
+06:12:51.274178 [wof-sqlite-index-features] STATUS time to index ancestors (951541) : 3m37.431723948s
+06:12:51.274182 [wof-sqlite-index-features] STATUS time to index concordances (951541) : 2m36.737857568s
+06:12:51.274187 [wof-sqlite-index-features] STATUS time to index geometries (951541) : 43m48.39054903s
+06:12:51.274192 [wof-sqlite-index-features] STATUS time to index all (951541) : 4h41m45.492361401s
 
 > du -h /usr/local/data/dist/sqlite/whosonfirst-data-latest.db
 15G     /usr/local/data/dist/sqlite/whosonfirst-data-latest.db
@@ -301,14 +297,14 @@ Indexing time will vary depending on the specifics of your hardware (available R
 And without:
 
 ```
-> ./bin/wof-sqlite-index -all -dsn /usr/local/data/dist/sqlite/whosonfirst-data-latest-nospatial.db -live-hard-die-fast -timings -mode repo /usr/local/data/whosonfirst-data
+> ./bin/wof-sqlite-index-features -all -dsn /usr/local/data/dist/sqlite/whosonfirst-data-latest-nospatial.db -live-hard-die-fast -timings -mode repo /usr/local/data/whosonfirst-data
 ...time passes...
-10:06:13.226187 [wof-sqlite-index] STATUS time to index names (951541) : 12m32.359733539s
-10:06:13.226206 [wof-sqlite-index] STATUS time to index ancestors (951541) : 3m27.294843778s
-10:06:13.226212 [wof-sqlite-index] STATUS time to index concordances (951541) : 2m5.947968206s
-10:06:13.226220 [wof-sqlite-index] STATUS time to index geojson (951541) : 10m11.355455209s
-10:06:13.226226 [wof-sqlite-index] STATUS time to index spr (951541) : 11m32.687081163s
-10:06:13.226233 [wof-sqlite-index] STATUS time to index all (951541) : 3h43m20.687783762s
+10:06:13.226187 [wof-sqlite-index-features] STATUS time to index names (951541) : 12m32.359733539s
+10:06:13.226206 [wof-sqlite-index-features] STATUS time to index ancestors (951541) : 3m27.294843778s
+10:06:13.226212 [wof-sqlite-index-features] STATUS time to index concordances (951541) : 2m5.947968206s
+10:06:13.226220 [wof-sqlite-index-features] STATUS time to index geojson (951541) : 10m11.355455209s
+10:06:13.226226 [wof-sqlite-index-features] STATUS time to index spr (951541) : 11m32.687081163s
+10:06:13.226233 [wof-sqlite-index-features] STATUS time to index all (951541) : 3h43m20.687783762s
 
 > du -h /usr/local/data/dist/sqlite/whosonfirst-data-latest-nospatial.db 
 12G     /usr/local/data/dist/sqlite/whosonfirst-data-latest-nospatial.db
