@@ -46,10 +46,7 @@ vendor-deps: rmdeps deps
 
 fmt:
 	go fmt cmd/*.go
-	go fmt database/*.go
-	go fmt index/*.go
 	go fmt tables/*.go
-	go fmt utils/*.go
 
 bin: 	self
 	rm -rf bin/*

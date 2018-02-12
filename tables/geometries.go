@@ -9,8 +9,8 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
+	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 	_ "log"
 )
 
