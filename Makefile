@@ -7,7 +7,6 @@ prep:
 self:   prep rmdeps
 	if test -d src/github.com/whosonfirst/go-whosonfirst-sqlite-features; then rm -rf src/github.com/whosonfirst/go-whosonfirst-sqlite-features; fi
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-sqlite-features
-	cp -r assets src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r tables src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r *.go src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r vendor/* src/
@@ -27,8 +26,6 @@ build:	fmt bin
 
 deps:
 	@GOPATH=$(GOPATH) go get -u "github.com/shaxbee/go-spatialite"
-	@GOPATH=$(GOPATH) go get -u "github.com/zendesk/go-bindata/"
-	@GOPATH=$(GOPATH) go get -u "github.com/dustin/go-humanize"
 	@GOPATH=$(GOPATH) go get -u "github.com/twpayne/go-geom"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-index"
@@ -37,7 +34,6 @@ deps:
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-sqlite"
 	rm -rf src/github.com/mattn
 	rm -rf src/github.com/shaxbee
-	rm -rf src/github.com/jteeuwen/go-bindata/testdata
 	rm -rf src/github.com/whosonfirst/go-whosonfirst-sqlite/vendor/github.com/whosonfirst/go-whosonfirst-log
 	rm -rf src/github.com/whosonfirst/go-whosonfirst-sqlite/vendor/github.com/whosonfirst/go-whosonfirst-index
 	rm -rf src/github.com/whosonfirst/go-whosonfirst-index/vendor/github.com/whosonfirst/go-whosonfirst-sqlite/
@@ -47,13 +43,6 @@ vendor-deps: rmdeps deps
 	cp -r src vendor
 	find vendor -name '.git' -print -type d -exec rm -rf {} +
 	rm -rf src
-
-assets: self
-	@GOPATH=$(GOPATH) go build -o bin/go-bindata ./vendor/github.com/jteeuwen/go-bindata/go-bindata/
-	rm -rf templates/*/*~
-	rm -rf assets
-	mkdir -p assets/html
-	@GOPATH=$(GOPATH) bin/go-bindata -pkg html -o assets/html/html.go templates/html
 
 fmt:
 	go fmt cmd/*.go
@@ -65,4 +54,3 @@ fmt:
 bin: 	self
 	rm -rf bin/*
 	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-index-features cmd/wof-sqlite-index-features.go
-	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-inventory cmd/wof-sqlite-inventory.go
