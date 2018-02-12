@@ -55,7 +55,7 @@ func (t *SearchTable) Schema() string {
 
 	schema := `CREATE VIRTUAL TABLE %s USING fts4(
 		id, placetype,
-		names_all, names_preferred, names_variant, names_colloquial,		
+		name, names_all, names_preferred, names_variant, names_colloquial,		
 		is_current, is_ceased, is_deprecated, is_superseded
 	);`
 
@@ -136,17 +136,17 @@ func (t *SearchTable) IndexFeature(db sqlite.Database, f geojson.Feature) error 
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 		id, placetype,
-		names_all, names_preferred, names_variant, names_colloquial,		
+		name, names_all, names_preferred, names_variant, names_colloquial,		
 		is_current, is_ceased, is_deprecated, is_superseded
 		) VALUES (
 		?, ?,
-		?, ?, ?, ?,
+		?, ?, ?, ?, ?,
 		?, ?, ?, ?
 		)`, t.Name()) // ON CONFLICT DO BLAH BLAH BLAH
 
 	args := []interface{}{
 		f.Id(), f.Placetype(),
-		strings.Join(names_all, " "), strings.Join(names_preferred, " "), strings.Join(names_variant, " "), strings.Join(names_colloquial, " "),
+		f.Name(), strings.Join(names_all, " "), strings.Join(names_preferred, " "), strings.Join(names_variant, " "), strings.Join(names_colloquial, " "),
 		is_current.Flag(), is_ceased.Flag(), is_deprecated.Flag(), is_superseded.Flag(),
 	}
 
