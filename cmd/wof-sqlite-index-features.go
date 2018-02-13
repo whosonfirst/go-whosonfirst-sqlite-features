@@ -173,6 +173,12 @@ func main() {
 
 	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) (interface{}, error) {
 
+		path, err := wof_index.PathForContext(ctx)
+
+		if err != nil {
+			return nil, err
+		}
+
 		ok, err := utils.IsPrincipalWOFRecord(fh, ctx)
 
 		if err != nil {
@@ -186,7 +192,14 @@ func main() {
 		// HACK - see above
 		closer := Closer{fh}
 
-		return feature.LoadWOFFeatureFromReader(closer)
+		i, err := feature.LoadWOFFeatureFromReader(closer)
+
+		if err != nil {
+			logger.Fatal("failed to index %s because %s", path, err)
+			return nil, err
+		}
+
+		return i, nil
 	}
 
 	idx, err := index.NewSQLiteIndexer(db, to_index, cb)

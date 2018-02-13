@@ -8,6 +8,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
+	_ "log"
 	"strings"
 )
 
@@ -107,8 +108,18 @@ func (t *SearchTable) IndexFeature(db sqlite.Database, f geojson.Feature) error 
 		}
 
 		possible := make([]string, 0)
+		possible_map := make(map[string]bool)
 
 		for _, n := range names {
+
+			_, ok := possible_map[n]
+
+			if !ok {
+				possible_map[n] = true
+			}
+		}
+
+		for n, _ := range possible_map {
 			possible = append(possible, n)
 		}
 
@@ -117,15 +128,15 @@ func (t *SearchTable) IndexFeature(db sqlite.Database, f geojson.Feature) error 
 		}
 
 		switch lt.PrivateUse() {
-		case "preferred":
+		case "x_preferred":
 			for _, n := range possible {
 				names_preferred = append(names_preferred, n)
 			}
-		case "variant":
+		case "x_variant":
 			for _, n := range possible {
 				names_variant = append(names_variant, n)
 			}
-		case "colloquial":
+		case "x_colloquial":
 			for _, n := range possible {
 				names_colloquial = append(names_colloquial, n)
 			}

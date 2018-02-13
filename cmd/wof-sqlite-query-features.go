@@ -56,14 +56,14 @@ func main() {
 	}
 
 	existential := map[string]string{
-		"is_current": *is_current,
-		"is_ceased": *is_ceased,
+		"is_current":    *is_current,
+		"is_ceased":     *is_ceased,
 		"is_deprecated": *is_deprecated,
 		"is_superseded": *is_superseded,
 	}
 
 	for label, flags := range existential {
-	
+
 		if flags == "" {
 			continue
 		}
