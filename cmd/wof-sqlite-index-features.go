@@ -53,6 +53,7 @@ func main() {
 	spr := flag.Bool("spr", false, "Index the 'spr' table")
 	live_hard := flag.Bool("live-hard-die-fast", false, "Enable various performance-related pragmas at the expense of possible (unlikely) database corruption")
 	timings := flag.Bool("timings", false, "Display timings during and after indexing")
+	liberal := flag.Bool("liberal", false, "Do not trigger errors for records that can not be processed, for whatever reason")
 	var procs = flag.Int("processes", (runtime.NumCPU() * 2), "The number of concurrent processes to index data with")
 
 	flag.Parse()
@@ -176,12 +177,26 @@ func main() {
 		path, err := wof_index.PathForContext(ctx)
 
 		if err != nil {
+
+			logger.Warning("failed to determine path for context (%s) because %s", ctx, err)
+
+			if *liberal {
+				return nil, nil
+			}
+
 			return nil, err
 		}
 
 		ok, err := utils.IsPrincipalWOFRecord(fh, ctx)
 
 		if err != nil {
+
+			logger.Warning("failed to determine whether %s is principal WOF record because %s", path, err)
+
+			if *liberal {
+				return nil, nil
+			}
+
 			return nil, err
 		}
 
@@ -195,7 +210,13 @@ func main() {
 		i, err := feature.LoadWOFFeatureFromReader(closer)
 
 		if err != nil {
-			logger.Fatal("failed to index %s because %s", path, err)
+
+			logger.Warning("failed to index %s because %s", path, err)
+
+			if *liberal {
+				return nil, nil
+			}
+
 			return nil, err
 		}
 
