@@ -43,7 +43,7 @@ func main() {
 
 	mode := flag.String("mode", "files", desc_modes)
 
-	all := flag.Bool("all", false, "Index all tables (except geometries which you need to specify explicitly)")
+	all := flag.Bool("all", false, "Index all tables (except the 'search' and 'geometries' tables which you need to specify explicitly)")
 	ancestors := flag.Bool("ancestors", false, "Index the 'ancestors' tables")
 	concordances := flag.Bool("concordances", false, "Index the 'concordances' tables")
 	geojson := flag.Bool("geojson", false, "Index the 'geojson' table")
@@ -110,17 +110,6 @@ func main() {
 		to_index = append(to_index, st)
 	}
 
-	if *search || *all {
-
-		st, err := tables.NewSearchTableWithDatabase(db)
-
-		if err != nil {
-			logger.Fatal("failed to create 'search' table because %s", err)
-		}
-
-		to_index = append(to_index, st)
-	}
-
 	if *names || *all {
 
 		nm, err := tables.NewNamesTableWithDatabase(db)
@@ -166,6 +155,21 @@ func main() {
 		}
 
 		to_index = append(to_index, gm)
+	}
+
+	// see the way we don't check *all here either - that's because this table can be
+	// brutally slow to index and should probably really just be a separate database
+	// anyway... (20180214/thisisaaronland)
+
+	if *search {
+
+		st, err := tables.NewSearchTableWithDatabase(db)
+
+		if err != nil {
+			logger.Fatal("failed to create 'search' table because %s", err)
+		}
+
+		to_index = append(to_index, st)
 	}
 
 	if len(to_index) == 0 {
