@@ -244,6 +244,8 @@ done
 
 ### wof-sqlite-query-features
 
+Query a search-enabled SQLite database by name(s). _This assumes you have created the database using the `wof-sqlite-index-features` tool with the `-search` paramter._
+
 ```
 ./bin/wof-sqlite-query-features -h
 Usage of ./bin/wof-sqlite-query-features:
@@ -265,7 +267,7 @@ Usage of ./bin/wof-sqlite-query-features:
     	The name of the SQLite table to query against. (default "search")
 ```
 
-Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...) because it increases the overall indexing time by a non-trivial amount.
+For example:
 
 ```
 > ./bin/wof-sqlite-query-features -dsn test2.db JFK
@@ -279,6 +281,8 @@ Full-text search is supported using SQLite's FTS4 indexer. In order to index the
 19:48:37.475971 [wof-sqlite-query-features] STATUS 102030585 Kolkata
 19:48:38.731255 [wof-sqlite-query-features] STATUS 101751929 Tromsø
 ```
+
+Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...) because it increases the overall indexing time by a non-trivial amount.
 
 ## Spatial indexes
 
