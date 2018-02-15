@@ -14,14 +14,14 @@ import (
 func main() {
 
 	driver := flag.String("driver", "sqlite3", "")
-	var dsn = flag.String("dsn", "index.db", "")
+	var dsn = flag.String("dsn", ":memory:", "")
 	var is_current = flag.String("is-current", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to their 'mz:is_current' property. Multiple flags are evaluated as a nested 'OR' query.")
 	var is_ceased = flag.String("is-ceased", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as ceased. Multiple flags are evaluated as a nested 'OR' query.")
 	var is_deprecated = flag.String("is-deprecated", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as deprecated. Multiple flags are evaluated as a nested 'OR' query.")
 	var is_superseded = flag.String("is-superseded", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as superseded. Multiple flags are evaluated as a nested 'OR' query.")
 
-	var table = flag.String("table", "search", "")
-	var col = flag.String("column", "names_all", "")
+	var table = flag.String("table", "search", "The name of the SQLite table to query against.")
+	var col = flag.String("column", "names_all", "The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial.")
 
 	flag.Parse()
 

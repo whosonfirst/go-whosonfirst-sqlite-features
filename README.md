@@ -242,9 +242,43 @@ do
 done
 ```    
 
-## Full-Text Search (FTS)
+### wof-sqlite-query-features
 
-Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...)
+```
+./bin/wof-sqlite-query-features -h
+Usage of ./bin/wof-sqlite-query-features:
+  -column string
+    	 The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial. (default "names_all")
+  -driver string
+    	 (default "sqlite3")
+  -dsn string
+    	 (default ":memory:")
+  -is-ceased string
+    	A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as ceased. Multiple flags are evaluated as a nested 'OR' query.
+  -is-current string
+    	A comma-separated list of valid existential flags (-1,0,1) to filter results according to their 'mz:is_current' property. Multiple flags are evaluated as a nested 'OR' query.
+  -is-deprecated string
+    	A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as deprecated. Multiple flags are evaluated as a nested 'OR' query.
+  -is-superseded string
+    	A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as superseded. Multiple flags are evaluated as a nested 'OR' query.
+  -table string
+    	The name of the SQLite table to query against. (default "search")
+```
+
+Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...) because it increases the overall indexing time by a non-trivial amount.
+
+```
+> ./bin/wof-sqlite-query-features -dsn test2.db JFK
+19:46:59.159308 [wof-sqlite-query-features] STATUS # SELECT id,name FROM search WHERE names_all MATCH ?
+19:47:07.143670 [wof-sqlite-query-features] STATUS 102534365 John F Kennedy Int'l Airport
+
+./bin/wof-sqlite-query-features -dsn test2.db -column names_colloquial Paris
+19:48:28.973405 [wof-sqlite-query-features] STATUS # SELECT id,name FROM search WHERE names_colloquial MATCH ?
+19:48:32.799970 [wof-sqlite-query-features] STATUS 85922583 San Francisco
+19:48:33.473074 [wof-sqlite-query-features] STATUS 102027181 Shanghai
+19:48:37.475971 [wof-sqlite-query-features] STATUS 102030585 Kolkata
+19:48:38.731255 [wof-sqlite-query-features] STATUS 101751929 Tromsø
+```
 
 ## Spatial indexes
 
