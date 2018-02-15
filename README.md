@@ -103,6 +103,16 @@ CREATE INDEX names_by_name_private ON names (name, privateuse, placetype, countr
 CREATE INDEX names_by_wofid ON names (id);
 ```
 
+### search
+
+```
+CREATE VIRTUAL TABLE search USING fts4(
+	id, placetype,
+	name, names_all, names_preferred, names_variant, names_colloquial,		
+	is_current, is_ceased, is_deprecated, is_superseded
+);
+```
+
 ### spr
 
 ```
@@ -154,29 +164,33 @@ Sure. You just need to write a per-table package that implements the `Table` int
 
 ```
 ./bin/wof-sqlite-index-features -h
-Usage of ./bin/wof-sqlite-index:
+Usage of ./bin/wof-sqlite-index-features:
   -all
-    	Index all tables (except geometries which you need to specify explicitly)
+    	Index all tables (except the 'search' and 'geometries' tables which you need to specify explicitly)
   -ancestors
     	Index the 'ancestors' tables
   -concordances
-    	Index the 'concordances' tables	
-  -dsn string
-    	 (default ":memory:")
+    	Index the 'concordances' tables
   -driver string
     	 (default "sqlite3")
+  -dsn string
+    	 (default ":memory:")
   -geojson
     	Index the 'geojson' table
   -geometries
     	Index the 'geometries' table (requires that libspatialite already be installed)
+  -liberal
+    	Do not trigger errors for records that can not be processed, for whatever reason
   -live-hard-die-fast
     	Enable various performance-related pragmas at the expense of possible (unlikely) database corruption
   -mode string
-    	The mode to use importing data. Valid modes are: directory,feature,feature-collection,files,geojson-ls,meta,path,repo. (default "files")
+    	The mode to use importing data. Valid modes are: directory,feature,feature-collection,files,geojson-ls,meta,path,repo,sqlite. (default "files")
   -names
     	Index the 'names' table
   -processes int
     	The number of concurrent processes to index data with (default 16)
+  -search
+    	Index the 'search' table (using SQLite FTS4 full-text indexer)
   -spr
     	Index the 'spr' table
   -timings
@@ -227,6 +241,10 @@ do
 
 done
 ```    
+
+## Full-Text Search (FTS)
+
+Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...)
 
 ## Spatial indexes
 
