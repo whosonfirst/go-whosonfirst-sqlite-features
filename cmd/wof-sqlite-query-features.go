@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
 	"github.com/whosonfirst/go-whosonfirst-log"
@@ -23,6 +24,8 @@ func main() {
 	var table = flag.String("table", "search", "The name of the SQLite table to query against.")
 	var col = flag.String("column", "names_all", "The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial.")
 
+	var output = flag.String("output", "", "A valid path to write (CSV) results to. If empty results are written to STDOUT.")
+
 	flag.Parse()
 
 	logger := log.SimpleWOFLogger()
@@ -30,10 +33,25 @@ func main() {
 	stdout := io.Writer(os.Stdout)
 	logger.AddLogger(stdout, "status")
 
+	var out io.Writer
+
+	if *output == "" {
+		out = os.Stdout
+	} else {
+
+		fh, err := os.OpenFile(*output, os.O_RDWR|os.O_CREATE, 0644)
+
+		if err != nil {
+			logger.Fatal("Unable to open file %s, because %s", *output, err)
+		}
+
+		out = fh
+	}
+
 	db, err := database.NewDBWithDriver(*driver, *dsn)
 
 	if err != nil {
-		logger.Fatal("unable to create database (%s) because %s", *dsn, err)
+		logger.Fatal("Unable to create database (%s) because %s", *dsn, err)
 	}
 
 	defer db.Close()
@@ -41,7 +59,7 @@ func main() {
 	conn, err := db.Conn()
 
 	if err != nil {
-		logger.Fatal("CONN", err)
+		logger.Fatal("Failed to connect to database, because %s", err)
 	}
 
 	match := fmt.Sprintf("%s MATCH ?", *col)
@@ -87,12 +105,12 @@ func main() {
 	rows, err := conn.Query(sql, args...)
 
 	if err != nil {
-		logger.Fatal("QUERY", err)
+		logger.Fatal("Failed to query database (%s) because %s", sql, err)
 	}
 
 	defer rows.Close()
 
-	logger.Status("# %s", sql)
+	wr := csv.NewWriter(out)
 
 	for rows.Next() {
 
@@ -102,16 +120,30 @@ func main() {
 		err = rows.Scan(&id, &name)
 
 		if err != nil {
-			logger.Fatal("ID", err)
+			logger.Fatal("Failed to scan results, because %s", err)
 		}
 
-		logger.Status("%s %s", id, name)
+		row := []string{id, name}
+		err := wr.Write(row)
+
+		if err != nil {
+			logger.Fatal("Failed to write CSV row because %s", err)
+		}
 	}
 
 	err = rows.Err()
 
 	if err != nil {
-		logger.Fatal("ROWS", err)
+		logger.Fatal("The database is unhappy, because %s", err)
 	}
 
+	wr.Flush()
+
+	err = wr.Error()
+
+	if err != nil {
+		logger.Fatal("The CSV writer is unhappy, because %s", err)
+	}
+
+	os.Exit(0)
 }

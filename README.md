@@ -244,13 +244,15 @@ done
 
 ### wof-sqlite-query-features
 
-Query a search-enabled SQLite database by name(s). _This assumes you have created the database using the `wof-sqlite-index-features` tool with the `-search` paramter._
+Query a search-enabled SQLite database by name(s). Results are output as CSV encoded rows containing `id` and `(wof:)name` properties.
+
+_This assumes you have created the database using the `wof-sqlite-index-features` tool with the `-search` paramter._
 
 ```
 ./bin/wof-sqlite-query-features -h
 Usage of ./bin/wof-sqlite-query-features:
   -column string
-    	 The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial. (default "names_all")
+    	The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial. (default "names_all")
   -driver string
     	 (default "sqlite3")
   -dsn string
@@ -263,6 +265,8 @@ Usage of ./bin/wof-sqlite-query-features:
     	A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as deprecated. Multiple flags are evaluated as a nested 'OR' query.
   -is-superseded string
     	A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as superseded. Multiple flags are evaluated as a nested 'OR' query.
+  -output string
+    	A valid path to write (CSV) results to. If empty results are written to STDOUT.
   -table string
     	The name of the SQLite table to query against. (default "search")
 ```
@@ -270,16 +274,14 @@ Usage of ./bin/wof-sqlite-query-features:
 For example:
 
 ```
-> ./bin/wof-sqlite-query-features -dsn test2.db JFK
-19:46:59.159308 [wof-sqlite-query-features] STATUS # SELECT id,name FROM search WHERE names_all MATCH ?
-19:47:07.143670 [wof-sqlite-query-features] STATUS 102534365 John F Kennedy Int'l Airport
+./bin/wof-sqlite-query-features -dsn test2.db JFK
+102534365,John F Kennedy Int'l Airport
 
 ./bin/wof-sqlite-query-features -dsn test2.db -column names_colloquial Paris
-19:48:28.973405 [wof-sqlite-query-features] STATUS # SELECT id,name FROM search WHERE names_colloquial MATCH ?
-19:48:32.799970 [wof-sqlite-query-features] STATUS 85922583 San Francisco
-19:48:33.473074 [wof-sqlite-query-features] STATUS 102027181 Shanghai
-19:48:37.475971 [wof-sqlite-query-features] STATUS 102030585 Kolkata
-19:48:38.731255 [wof-sqlite-query-features] STATUS 101751929 Tromsø
+85922583,San Francisco
+102027181,Shanghai
+102030585,Kolkata
+101751929,Tromsø
 ```
 
 Full-text search is supported using SQLite's FTS4 indexer. In order to index the `search` table you must explicitly pass the `-search` flag to the `wof-sqlite-index-features` command. It is _not_ included when you set the `-all` flag (which should probably be renamed to be `-common` but that's not the case today...) because it increases the overall indexing time by a non-trivial amount.
