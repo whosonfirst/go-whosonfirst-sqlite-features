@@ -2,9 +2,12 @@ package index
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/feature"
 	wof_index "github.com/whosonfirst/go-whosonfirst-index"
 	wof_utils "github.com/whosonfirst/go-whosonfirst-index/utils"
+	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	sql_index "github.com/whosonfirst/go-whosonfirst-sqlite/index"
 	"io"
 )
@@ -24,57 +27,43 @@ func (c Closer) Close() error {
 	return nil
 }
 
-func NewDefaultSQLiteFeaturesIndexer(db sqlite.Database, to_index []sqlite.Table) (sql_index.Index, error) {
+func NewDefaultSQLiteFeaturesIndexer(db sqlite.Database, to_index []sqlite.Table) (*sql_index.SQLiteIndexer, error) {
 
 	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) (interface{}, error) {
 
-		path, err := wof_index.PathForContext(ctx)
+		select {
 
-		if err != nil {
-
-			/*
-				if *liberal {
-					return nil, nil
-				}
-			*/
-
-			return nil, err
-		}
-
-		ok, err := wof_utils.IsPrincipalWOFRecord(fh, ctx)
-
-		if err != nil {
-
-			/*
-				if *liberal {
-					return nil, nil
-				}
-			*/
-
-			return nil, err
-		}
-
-		if !ok {
+		case <-ctx.Done():
 			return nil, nil
-		}
+		default:
+			path, err := wof_index.PathForContext(ctx)
 
-		// HACK - see above
-		closer := Closer{fh}
+			if err != nil {
+				return nil, err
+			}
 
-		i, err := feature.LoadWOFFeatureFromReader(closer)
+			ok, err := wof_utils.IsPrincipalWOFRecord(fh, ctx)
 
-		if err != nil {
+			if err != nil {
+				return nil, err
+			}
 
-			logger.Warning("failed to index %s because %s", path, err)
-
-			if *liberal {
+			if !ok {
 				return nil, nil
 			}
 
-			return nil, err
-		}
+			// HACK - see above
+			closer := Closer{fh}
 
-		return i, nil
+			i, err := feature.LoadWOFFeatureFromReader(closer)
+
+			if err != nil {
+				msg := fmt.Sprintf("Unable to load %s, because %s", path, err)
+				return nil, errors.New(msg)
+			}
+
+			return i, nil
+		}
 	}
 
 	return sql_index.NewSQLiteIndexer(db, to_index, cb)

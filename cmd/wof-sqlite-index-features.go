@@ -1,37 +1,19 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/feature"
 	wof_index "github.com/whosonfirst/go-whosonfirst-index"
-	"github.com/whosonfirst/go-whosonfirst-index/utils"
 	"github.com/whosonfirst/go-whosonfirst-log"
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/index"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/tables"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/database"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/index"
 	"io"
 	"os"
 	"runtime"
 	"strings"
 )
-
-// THIS IS A TOTAL HACK UNTIL WE CAN SORT THINGS OUT IN
-// go-whosonfirst-index... (20180206/thisisaaronland)
-
-type Closer struct {
-	fh io.Reader
-}
-
-func (c Closer) Read(b []byte) (int, error) {
-	return c.fh.Read(b)
-}
-
-func (c Closer) Close() error {
-	return nil
-}
 
 func main() {
 
@@ -53,7 +35,7 @@ func main() {
 	spr := flag.Bool("spr", false, "Index the 'spr' table")
 	live_hard := flag.Bool("live-hard-die-fast", false, "Enable various performance-related pragmas at the expense of possible (unlikely) database corruption")
 	timings := flag.Bool("timings", false, "Display timings during and after indexing")
-	liberal := flag.Bool("liberal", false, "Do not trigger errors for records that can not be processed, for whatever reason")
+	// liberal := flag.Bool("liberal", false, "Do not trigger errors for records that can not be processed, for whatever reason")
 	var procs = flag.Int("processes", (runtime.NumCPU() * 2), "The number of concurrent processes to index data with")
 
 	flag.Parse()
@@ -176,58 +158,7 @@ func main() {
 		logger.Fatal("You forgot to specify which (any) tables to index")
 	}
 
-	cb := func(ctx context.Context, fh io.Reader, args ...interface{}) (interface{}, error) {
-
-		path, err := wof_index.PathForContext(ctx)
-
-		if err != nil {
-
-			logger.Warning("failed to determine path for context (%s) because %s", ctx, err)
-
-			if *liberal {
-				return nil, nil
-			}
-
-			return nil, err
-		}
-
-		ok, err := utils.IsPrincipalWOFRecord(fh, ctx)
-
-		if err != nil {
-
-			logger.Warning("failed to determine whether %s is principal WOF record because %s", path, err)
-
-			if *liberal {
-				return nil, nil
-			}
-
-			return nil, err
-		}
-
-		if !ok {
-			return nil, nil
-		}
-
-		// HACK - see above
-		closer := Closer{fh}
-
-		i, err := feature.LoadWOFFeatureFromReader(closer)
-
-		if err != nil {
-
-			logger.Warning("failed to index %s because %s", path, err)
-
-			if *liberal {
-				return nil, nil
-			}
-
-			return nil, err
-		}
-
-		return i, nil
-	}
-
-	idx, err := index.NewSQLiteIndexer(db, to_index, cb)
+	idx, err := index.NewDefaultSQLiteFeaturesIndexer(db, to_index)
 
 	if err != nil {
 		logger.Fatal("failed to create sqlite indexer because %s", err)

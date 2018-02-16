@@ -179,8 +179,6 @@ Usage of ./bin/wof-sqlite-index-features:
     	Index the 'geojson' table
   -geometries
     	Index the 'geometries' table (requires that libspatialite already be installed)
-  -liberal
-    	Do not trigger errors for records that can not be processed, for whatever reason
   -live-hard-die-fast
     	Enable various performance-related pragmas at the expense of possible (unlikely) database corruption
   -mode string
