@@ -7,6 +7,7 @@ prep:
 self:   prep rmdeps
 	if test -d src/github.com/whosonfirst/go-whosonfirst-sqlite-features; then rm -rf src/github.com/whosonfirst/go-whosonfirst-sqlite-features; fi
 	mkdir -p src/github.com/whosonfirst/go-whosonfirst-sqlite-features
+	cp -r index src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r tables src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r *.go src/github.com/whosonfirst/go-whosonfirst-sqlite-features/
 	cp -r vendor/* src/
@@ -46,6 +47,7 @@ vendor-deps: rmdeps deps
 
 fmt:
 	go fmt cmd/*.go
+	go fmt index/*.go
 	go fmt tables/*.go
 
 bin: 	self
