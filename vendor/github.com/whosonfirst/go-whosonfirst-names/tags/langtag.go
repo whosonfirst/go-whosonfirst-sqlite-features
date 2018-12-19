@@ -2,6 +2,7 @@ package tags
 
 import (
 	"errors"
+	"fmt"
 	"github.com/whosonfirst/go-rfc-5646"
 	"github.com/whosonfirst/go-whosonfirst-names"
 	"strings"
@@ -77,7 +78,8 @@ func NewLangTag(t string) (rfc5646.LanguageTag, error) {
 	match := re.FindStringSubmatch(t)
 
 	if len(match) == 0 {
-		return nil, errors.New("Failed to parse tag")
+	   	msg := fmt.Sprintf("Failed to parse language tag '%s'", t)
+		return nil, errors.New(msg)
 	}
 
 	result := make(map[string]string)
