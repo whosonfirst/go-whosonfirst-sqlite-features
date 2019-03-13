@@ -152,6 +152,7 @@ CREATE INDEX spr_by_deprecated ON spr (is_deprecated, lastmodified);
 CREATE INDEX spr_by_ceased ON spr (is_ceased, lastmodified);
 CREATE INDEX spr_by_superseded ON spr (is_superseded, lastmodified);
 CREATE INDEX spr_by_superseding ON spr (is_superseding, lastmodified);
+CREATE INDEX spr_obsolete ON spr (is_deprecated, is_superseded);
 ```
 
 ## Custom tables
