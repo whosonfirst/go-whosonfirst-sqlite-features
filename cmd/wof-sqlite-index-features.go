@@ -3,16 +3,17 @@ package main
 import (
 	"flag"
 	"fmt"
-	wof_index "github.com/whosonfirst/go-whosonfirst-index"
-	"github.com/whosonfirst/go-whosonfirst-log"
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-sqlite-features/index"
-	"github.com/whosonfirst/go-whosonfirst-sqlite-features/tables"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/database"
 	"io"
 	"os"
 	"runtime"
 	"strings"
+
+	wof_index "github.com/whosonfirst/go-whosonfirst-index"
+	log "github.com/whosonfirst/go-whosonfirst-log"
+	"github.com/whosonfirst/go-whosonfirst-sqlite"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/index"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/tables"
+	"github.com/whosonfirst/go-whosonfirst-sqlite/database"
 )
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 	spr := flag.Bool("spr", false, "Index the 'spr' table")
 	live_hard := flag.Bool("live-hard-die-fast", true, "Enable various performance-related pragmas at the expense of possible (unlikely) database corruption")
 	timings := flag.Bool("timings", false, "Display timings during and after indexing")
+	optimize := flag.Bool("optimize", true, "Attempt to optimize the database before closing connection")
 	// liberal := flag.Bool("liberal", false, "Do not trigger errors for records that can not be processed, for whatever reason")
 	var procs = flag.Int("processes", (runtime.NumCPU() * 2), "The number of concurrent processes to index data with")
 
@@ -55,6 +57,25 @@ func main() {
 
 	if err != nil {
 		logger.Fatal("unable to create database (%s) because %s", *dsn, err)
+	}
+
+	// optimize query performance
+	// https://www.sqlite.org/pragma.html#pragma_optimize
+	if *optimize {
+
+		defer func() {
+			conn, err := db.Conn()
+			if err != nil {
+				logger.Fatal("Unable to optimize, because %s", err)
+			}
+
+			logger.Info("Optimizing database...")
+
+			_, err = conn.Exec("PRAGMA optimize")
+			if err != nil {
+				logger.Fatal("Unable to optimize, because %s", err)
+			}
+		}()
 	}
 
 	defer db.Close()
