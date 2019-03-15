@@ -75,7 +75,7 @@ func (t *SPRTable) Name() string {
 
 func (t *SPRTable) Schema() string {
 
-	sql := `CREATE TABLE %s (
+	sql := `CREATE TABLE %[1]s (
 			id INTEGER NOT NULL PRIMARY KEY,
 			parent_id INTEGER,
 			name TEXT,
@@ -98,23 +98,23 @@ func (t *SPRTable) Schema() string {
 			lastmodified INTEGER
 	);
 
-	CREATE INDEX spr_by_lastmod ON %s (lastmodified);
-	CREATE INDEX spr_by_parent ON %s (parent_id, is_current, lastmodified);
-	CREATE INDEX spr_by_placetype ON %s (placetype, is_current, lastmodified);
-	CREATE INDEX spr_by_country ON %s (country, placetype, is_current, lastmodified);
-	CREATE INDEX spr_by_name ON %s (name, placetype, is_current, lastmodified);
-	CREATE INDEX spr_by_centroid ON %s (latitude, longitude, is_current, lastmodified);
-	CREATE INDEX spr_by_bbox ON %s (min_latitude, min_longitude, max_latitude, max_longitude, placetype, is_current, lastmodified);
-	CREATE INDEX spr_by_repo ON %s (repo, lastmodified);
-	CREATE INDEX spr_by_current ON %s (is_current, lastmodified);
-	CREATE INDEX spr_by_deprecated ON %s (is_deprecated, lastmodified);
-	CREATE INDEX spr_by_ceased ON %s (is_ceased, lastmodified);
-	CREATE INDEX spr_by_superseded ON %s (is_superseded, lastmodified);
-	CREATE INDEX spr_by_superseding ON %s (is_superseding, lastmodified);
+	CREATE INDEX spr_by_lastmod ON %[1]s (lastmodified);
+	CREATE INDEX spr_by_parent ON %[1]s (parent_id, is_current, lastmodified);
+	CREATE INDEX spr_by_placetype ON %[1]s (placetype, is_current, lastmodified);
+	CREATE INDEX spr_by_country ON %[1]s (country, placetype, is_current, lastmodified);
+	CREATE INDEX spr_by_name ON %[1]s (name, placetype, is_current, lastmodified);
+	CREATE INDEX spr_by_centroid ON %[1]s (latitude, longitude, is_current, lastmodified);
+	CREATE INDEX spr_by_bbox ON %[1]s (min_latitude, min_longitude, max_latitude, max_longitude, placetype, is_current, lastmodified);
+	CREATE INDEX spr_by_repo ON %[1]s (repo, lastmodified);
+	CREATE INDEX spr_by_current ON %[1]s (is_current, lastmodified);
+	CREATE INDEX spr_by_deprecated ON %[1]s (is_deprecated, lastmodified);
+	CREATE INDEX spr_by_ceased ON %[1]s (is_ceased, lastmodified);
+	CREATE INDEX spr_by_superseded ON %[1]s (is_superseded, lastmodified);
+	CREATE INDEX spr_by_superseding ON %[1]s (is_superseding, lastmodified);
+	CREATE INDEX spr_obsolete ON %[1]s (is_deprecated, is_superseded);
 	`
 
-	// so dumb...
-	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name(), t.Name())
+	return fmt.Sprintf(sql, t.Name())
 }
 
 func (t *SPRTable) IndexRecord(db sqlite.Database, i interface{}) error {
