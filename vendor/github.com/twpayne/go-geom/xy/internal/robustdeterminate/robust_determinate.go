@@ -20,9 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 package robustdeterminate
 
-import (
-	"math"
-)
+import "math"
 
 // Sign enumerates the different possible signs
 type Sign int
@@ -50,22 +48,23 @@ func SignOfDet2x2(x1, y1, x2, y2 float64) Sign {
 	/*
 	 *  testing null entries
 	 */
-	if (x1 == 0.0) || (y2 == 0.0) {
-		if (y1 == 0.0) || (x2 == 0.0) {
+	if x1 == 0.0 || y2 == 0.0 {
+		switch {
+		case y1 == 0.0 || x2 == 0.0:
 			return Zero
-		} else if y1 > 0 {
+		case y1 > 0:
 			if x2 > 0 {
 				return Negative
 			}
 			return Positive
-		} else {
+		default:
 			if x2 > 0 {
 				return Positive
 			}
 			return Negative
 		}
 	}
-	if (y1 == 0.0) || (x2 == 0.0) {
+	if y1 == 0.0 || x2 == 0.0 {
 		if y2 > 0 {
 			if x1 > 0 {
 				return Positive
@@ -89,7 +88,6 @@ func SignOfDet2x2(x1, y1, x2, y2 float64) Sign {
 	if 0.0 < y1 {
 		if 0.0 < y2 {
 			if y1 <= y2 {
-
 			} else {
 				sign = Negative
 				swap = x1
@@ -178,12 +176,12 @@ func SignOfDet2x2(x1, y1, x2, y2 float64) Sign {
 	 *  all entries strictly positive   x1 <= x2 and y1 <= y2
 	 */
 	for {
-		count = count + 1
+		count++
 		// MD - UNSAFE HACK for testing only!
 		//      k = (int) (x2 / x1);
 		k = math.Floor(x2 / x1)
-		x2 = x2 - k*x1
-		y2 = y2 - k*y1
+		x2 -= k * x1
+		y2 -= k * y1
 
 		/*
 		 *  testing if R (new U2) is in U1 rectangle
@@ -226,8 +224,8 @@ func SignOfDet2x2(x1, y1, x2, y2 float64) Sign {
 		// MD - UNSAFE HACK for testing only!
 		//      k = (int) (x1 / x2);
 		k = math.Floor(x1 / x2)
-		x1 = x1 - k*x2
-		y1 = y1 - k*y2
+		x1 -= k * x2
+		y1 -= k * y2
 
 		/*
 		 *  testing if R (new U1) is in U2 rectangle
@@ -264,5 +262,4 @@ func SignOfDet2x2(x1, y1, x2, y2 float64) Sign {
 			return -sign
 		}
 	}
-
 }

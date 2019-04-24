@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/twpayne/go-geom"
+	geom "github.com/twpayne/go-geom"
 )
 
 var (
@@ -71,13 +71,14 @@ func parseDec(s string, start, stop int) (int, error) {
 // parseDecInRange parsers a decimal value in s[start:stop], and returns an
 // error if it is outside the range [min, max).
 func parseDecInRange(s string, start, stop, min, max int) (int, error) {
-	if result, err := parseDec(s, start, stop); err != nil {
+	result, err := parseDec(s, start, stop)
+	switch {
+	case err != nil:
 		return result, err
-	} else if result < min || max <= result {
+	case result < min || max <= result:
 		return result, fmt.Errorf("value out of range: %d, want %d-%d", result, min, max)
-	} else {
-		return result, nil
 	}
+	return result, nil
 }
 
 // parser contains the state of a parser.
@@ -100,7 +101,6 @@ func newParser() *parser {
 
 // parseB parses a B record from line and updates the state of p.
 func (p *parser) parseB(line string) error {
-
 	if len(line) < p.bRecordLen {
 		return fmt.Errorf("B record too short: %d, want >=%d", len(line), p.bRecordLen)
 	}
@@ -197,7 +197,6 @@ func (p *parser) parseB(line string) error {
 	p.lastDate = date
 
 	return nil
-
 }
 
 // parseB parses an H record from line and updates the state of p.
@@ -300,12 +299,13 @@ func doParse(r io.Reader) (*parser, Errors) {
 	leadingNoise := false
 	for lineno := 1; s.Scan(); lineno++ {
 		line := strings.TrimSuffix(s.Text(), "\r")
-		if len(line) == 0 {
-		} else if foundA {
+		switch {
+		case len(line) == 0:
+		case foundA:
 			if err := p.parseLine(line); err != nil {
 				errors = append(errors, fmt.Errorf("line %d: %q: %v", lineno, line, err))
 			}
-		} else {
+		default:
 			if c := line[0]; c == 'A' {
 				foundA = true
 			} else if 'A' <= c && c <= 'Z' {

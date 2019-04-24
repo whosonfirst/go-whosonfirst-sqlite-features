@@ -3,7 +3,7 @@ package centralendpoint
 import (
 	"math"
 
-	"github.com/twpayne/go-geom"
+	geom "github.com/twpayne/go-geom"
 	"github.com/twpayne/go-geom/xy/internal"
 )
 
@@ -20,7 +20,8 @@ func GetIntersection(line1End1, line1End2, line2End1, line2End2 geom.Coord) geom
 		line1End1: line1End1,
 		line1End2: line1End2,
 		line2End1: line2End1,
-		line2End2: line2End2}
+		line2End2: line2End2,
+	}
 	intersector.compute()
 	return intersector.intersectionPoint
 }
@@ -44,8 +45,8 @@ func average(pts [4]geom.Coord) geom.Coord {
 		avg[1] += pts[i][1]
 	}
 	if n > 0 {
-		avg[0] = avg[0] / n
-		avg[1] = avg[1] / n
+		avg[0] /= n
+		avg[1] /= n
 	}
 	return avg
 }
