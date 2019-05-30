@@ -55,14 +55,16 @@ func (t *GeoJSONTable) Schema() string {
 	sql := `CREATE TABLE %s (
 		id INTEGER NOT NULL,
 		body TEXT,
-		alt TEXT,
+		source TEXT,
+		is_alt BOOLEAN,
 		lastmodified INTEGER
 	);
 
-	CREATE UNIQUE INDEX geojson_by_id ON %s (id, alt);
+	CREATE UNIQUE INDEX geojson_by_id ON %s (id, source);
+	CREATE INDEX geojson_by_alt ON %s (id, alt);
 	CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
 	`
-	
+
 	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name())
 }
 
@@ -85,7 +87,12 @@ func (t *GeoJSONTable) IndexFeature(db sqlite.Database, f geojson.Feature) error
 
 	str_id := f.Id()
 	body := f.Bytes()
-	alt := ""
+
+	// TBD
+
+	// figure this out...
+	source := "" // whosonfirst.Source(f)
+	is_alt := 0  // whosonfirst.IsAlt(f)
 
 	lastmod := whosonfirst.LastModified(f)
 
@@ -96,9 +103,9 @@ func (t *GeoJSONTable) IndexFeature(db sqlite.Database, f geojson.Feature) error
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
-		id, body, alt, lastmodified
+		id, body, source, is_alt, lastmodified
 	) VALUES (
-		?, ?, ?, ?
+		?, ?, ?, ?, ?
 	)`, t.Name())
 
 	stmt, err := tx.Prepare(sql)
@@ -111,7 +118,7 @@ func (t *GeoJSONTable) IndexFeature(db sqlite.Database, f geojson.Feature) error
 
 	str_body := string(body)
 
-	_, err = stmt.Exec(str_id, str_body, alt, lastmod)
+	_, err = stmt.Exec(str_id, str_body, source, is_alt, lastmod)
 
 	if err != nil {
 		return err
