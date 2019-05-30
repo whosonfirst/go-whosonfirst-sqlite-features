@@ -88,11 +88,8 @@ func (t *GeoJSONTable) IndexFeature(db sqlite.Database, f geojson.Feature) error
 	str_id := f.Id()
 	body := f.Bytes()
 
-	// TBD
-
-	// figure this out...
-	source := "" // whosonfirst.Source(f)
-	is_alt := 0  // whosonfirst.IsAlt(f)
+	source := whosonfirst.Source(f)
+	is_alt := whosonfirst.IsAlt(f)
 
 	lastmod := whosonfirst.LastModified(f)
 

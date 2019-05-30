@@ -53,5 +53,9 @@ fmt:
 
 bin: 	self
 	rm -rf bin/*
-	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-index-features cmd/wof-sqlite-index-features.go
-	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-query-features cmd/wof-sqlite-query-features.go
+	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-index-features cmd/wof-sqlite-index-features/main.go
+	@GOPATH=$(GOPATH) go build -o bin/wof-sqlite-query-features cmd/wof-sqlite-query-features/main.go
+
+tools:
+	go build -o bin/wof-sqlite-index-features cmd/wof-sqlite-index-features/main.go
+	go build -o bin/wof-sqlite-query-features cmd/wof-sqlite-query-features/main.go
