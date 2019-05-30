@@ -4,11 +4,30 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 )
 
+type CommonTablesOptions struct {
+	GeoJSON *GeoJSONTableOptions
+}
+
 func CommonTablesWithDatabase(db sqlite.Database) ([]sqlite.Table, error) {
+
+	geojson_opts, err := DefaultGeoJSONTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	table_opts := &CommonTablesOptions{
+		GeoJSON: geojson_opts,
+	}
+
+	return CommonTablesWithDatabaseAndOptions(db, table_opts)
+}
+
+func CommonTablesWithDatabaseAndOptions(db sqlite.Database, table_opts *CommonTablesOptions) ([]sqlite.Table, error) {
 
 	to_index := make([]sqlite.Table, 0)
 
-	gt, err := NewGeoJSONTableWithDatabase(db)
+	gt, err := NewGeoJSONTableWithDatabaseAndOptions(db, table_opts.GeoJSON)
 
 	if err != nil {
 		return nil, err

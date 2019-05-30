@@ -9,9 +9,23 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 )
 
+type GeoJSONTableOptions struct {
+	IndexAltFiles bool
+}
+
+func DefaultGeoJSONTableOptions() (*GeoJSONTableOptions, error) {
+
+	opts := GeoJSONTableOptions{
+		IndexAltFiles: false,
+	}
+
+	return &opts, nil
+}
+
 type GeoJSONTable struct {
 	features.FeatureTable
-	name string
+	name    string
+	options *GeoJSONTableOptions
 }
 
 type GeoJSONRow struct {
@@ -22,7 +36,18 @@ type GeoJSONRow struct {
 
 func NewGeoJSONTableWithDatabase(db sqlite.Database) (sqlite.Table, error) {
 
-	t, err := NewGeoJSONTable()
+	opts, err := DefaultGeoJSONTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewGeoJSONTableWithDatabaseAndOptions(db, opts)
+}
+
+func NewGeoJSONTableWithDatabaseAndOptions(db sqlite.Database, opts *GeoJSONTableOptions) (sqlite.Table, error) {
+
+	t, err := NewGeoJSONTableWithOptions(opts)
 
 	if err != nil {
 		return nil, err
@@ -39,8 +64,20 @@ func NewGeoJSONTableWithDatabase(db sqlite.Database) (sqlite.Table, error) {
 
 func NewGeoJSONTable() (sqlite.Table, error) {
 
+	opts, err := DefaultGeoJSONTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewGeoJSONTableWithOptions(opts)
+}
+
+func NewGeoJSONTableWithOptions(opts *GeoJSONTableOptions) (sqlite.Table, error) {
+
 	t := GeoJSONTable{
-		name: "geojson",
+		name:    "geojson",
+		options: opts,
 	}
 
 	return &t, nil
@@ -90,6 +127,10 @@ func (t *GeoJSONTable) IndexFeature(db sqlite.Database, f geojson.Feature) error
 
 	source := whosonfirst.Source(f)
 	is_alt := whosonfirst.IsAlt(f)
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
 
 	lastmod := whosonfirst.LastModified(f)
 
