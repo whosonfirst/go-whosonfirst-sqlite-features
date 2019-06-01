@@ -98,11 +98,11 @@ func (t *GeoJSONTable) Schema() string {
 	);
 
 	CREATE UNIQUE INDEX geojson_by_id ON %s (id, source);
-	CREATE INDEX geojson_by_alt ON %s (id, alt);
+	CREATE INDEX geojson_by_alt ON %s (id, is_alt);
 	CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
 	`
 
-	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name())
+	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name())
 }
 
 func (t *GeoJSONTable) InitializeTable(db sqlite.Database) error {
