@@ -34,6 +34,7 @@ deps:
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-names"
 	@GOPATH=$(GOPATH) go get -u "github.com/whosonfirst/go-whosonfirst-sqlite"
 	mv src/github.com/whosonfirst/go-whosonfirst-geojson-v2/vendor/github.com/whosonfirst/warning src/github.com/whosonfirst/
+	mv src/github.com/whosonfirst/go-whosonfirst-geojson-v2/vendor/github.com/hashicorp src/github.com/
 	rm -rf src/github.com/mattn
 	rm -rf src/github.com/shaxbee
 	rm -rf src/github.com/whosonfirst/go-whosonfirst-sqlite/vendor/github.com/whosonfirst/go-whosonfirst-log
