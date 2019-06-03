@@ -78,7 +78,7 @@ func NewLangTag(t string) (rfc5646.LanguageTag, error) {
 	match := re.FindStringSubmatch(t)
 
 	if len(match) == 0 {
-	   	msg := fmt.Sprintf("Failed to parse language tag '%s'", t)
+		msg := fmt.Sprintf("Failed to parse language tag '%s'", t)
 		return nil, errors.New(msg)
 	}
 
@@ -103,4 +103,3 @@ func NewLangTag(t string) (rfc5646.LanguageTag, error) {
 
 	return &lt, nil
 }
-

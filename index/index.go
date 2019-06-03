@@ -31,7 +31,7 @@ func NewDefaultSQLiteFeaturesIndexer(db sqlite.Database, to_index []sqlite.Table
 			closer := ioutil.NopCloser(fh)
 
 			// i, err := feature.LoadWOFFeatureFromReader(closer)
-			i, err := feature.LoadGeoJSONFeatureFromReader(closer)			
+			i, err := feature.LoadGeoJSONFeatureFromReader(closer)
 
 			if err != nil && !warning.IsWarning(err) {
 				msg := fmt.Sprintf("Unable to load %s, because %s", path, err)
