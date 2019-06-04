@@ -159,9 +159,12 @@ CREATE INDEX spr_obsolete ON spr (is_deprecated, is_superseded);
 
 Sure. You just need to write a per-table package that implements the `Table` interface as described in [go-whosonfirst-sqlite](https://github.com/whosonfirst/go-whosonfirst-sqlite#custom-tables).
 
+## Dependencies and relationships
+
+These are documented in the [Dependencies and relationships section](https://github.com/whosonfirst/go-whosonfirst-sqlite#dependencies-and-relationships) of the `go-whosonfirst-sqlite` package.
+
 ## See also
 
 * https://sqlite.org/
 * https://www.gaia-gis.it/fossil/libspatialite/index
-* https://dist.whosonfirst.org/sqlite/
 * https://github.com/whosonfirst/go-whosonfirst-sqlite
