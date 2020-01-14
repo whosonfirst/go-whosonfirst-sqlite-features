@@ -7,5 +7,5 @@ require (
 	github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.0
 	github.com/whosonfirst/go-whosonfirst-log v0.1.0
 	github.com/whosonfirst/go-whosonfirst-names v0.1.0
-	github.com/whosonfirst/go-whosonfirst-sqlite v0.1.4
+	github.com/whosonfirst/go-whosonfirst-sqlite v0.1.5
 )
