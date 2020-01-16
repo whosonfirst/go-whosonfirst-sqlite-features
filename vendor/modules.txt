@@ -21,7 +21,7 @@ github.com/whosonfirst/go-spatialite
 # github.com/whosonfirst/go-whosonfirst-flags v0.1.0
 github.com/whosonfirst/go-whosonfirst-flags/existential
 github.com/whosonfirst/go-whosonfirst-flags
-# github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.0
+# github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.1
 github.com/whosonfirst/go-whosonfirst-geojson-v2
 github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry
 github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst

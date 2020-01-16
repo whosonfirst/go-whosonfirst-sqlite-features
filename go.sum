@@ -87,6 +87,8 @@ github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.11.1 h1:WKIZkzlOBgfE6AuVT8xy
 github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.11.1/go.mod h1:uriIqN/EQVo1QllqvpIcAyshnEOggPlraUYjjeyGTBg=
 github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.0 h1:aYsgIq/g4fU5rVdumMTqG9ysJxwhW085buzaMxP5mjs=
 github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.0/go.mod h1:hC145O2TiPTU8zemHRriKOkG972BNwEowqjxqHeWDwM=
+github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.1 h1:IcqotmKNeHwbirmR9q0kktLzARX5kyX4u4pESQhpSsA=
+github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.1/go.mod h1:hC145O2TiPTU8zemHRriKOkG972BNwEowqjxqHeWDwM=
 github.com/whosonfirst/go-whosonfirst-hash v0.1.0 h1:FpnclPIb+8M1uhSXfl3z8nYcG/3O59vgfkdV+m0hQpA=
 github.com/whosonfirst/go-whosonfirst-hash v0.1.0/go.mod h1:1ZdCFZTnQt5bwnsj2daB9yHilKOKToVh+Tyj/Z8TbUk=
 github.com/whosonfirst/go-whosonfirst-index v0.1.1 h1:AV2dVzt0F9pAupbpsl4TpBxZLeOqL4jtKZKb1gAoJT0=
