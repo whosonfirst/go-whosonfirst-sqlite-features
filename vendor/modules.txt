@@ -19,8 +19,8 @@ github.com/whosonfirst/go-rfc-5646
 # github.com/whosonfirst/go-spatialite v0.1.0
 github.com/whosonfirst/go-spatialite
 # github.com/whosonfirst/go-whosonfirst-flags v0.1.0
-github.com/whosonfirst/go-whosonfirst-flags/existential
 github.com/whosonfirst/go-whosonfirst-flags
+github.com/whosonfirst/go-whosonfirst-flags/existential
 # github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.12.1
 github.com/whosonfirst/go-whosonfirst-geojson-v2
 github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry
@@ -31,8 +31,8 @@ github.com/whosonfirst/go-whosonfirst-hash
 # github.com/whosonfirst/go-whosonfirst-log v0.1.0
 github.com/whosonfirst/go-whosonfirst-log
 # github.com/whosonfirst/go-whosonfirst-names v0.1.0
-github.com/whosonfirst/go-whosonfirst-names/tags
 github.com/whosonfirst/go-whosonfirst-names
+github.com/whosonfirst/go-whosonfirst-names/tags
 # github.com/whosonfirst/go-whosonfirst-placetypes v0.1.0
 github.com/whosonfirst/go-whosonfirst-placetypes
 github.com/whosonfirst/go-whosonfirst-placetypes/placetypes
