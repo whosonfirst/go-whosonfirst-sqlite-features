@@ -103,6 +103,22 @@ CREATE INDEX names_by_name_private ON names (name, privateuse, placetype, countr
 CREATE INDEX names_by_wofid ON names (id);
 ```
 
+### rtree
+
+```
+CREATE VIRTUAL TABLE %s USING rtree (
+	id INTEGER NOT NULL PRIMARY KEY,
+	is_alt TINYINT,
+	min_x REAL,
+	min_y REAL,
+	max_x REAL,
+	max_y REAL,
+	lastmodified INTEGER
+);
+
+CREATE INDEX rtree_by_lastmod ON %s (lastmodified);
+```
+
 ### search
 
 ```

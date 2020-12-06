@@ -98,10 +98,10 @@ func (t *RTreeTable) Schema() string {
 	sql := `CREATE VIRTUAL TABLE %s USING rtree (
 		id INTEGER NOT NULL PRIMARY KEY,
 		is_alt TINYINT,
-		min_x DECIMAL,
-		min_y DECIMAL,
-		max_x DECIMAL,
-		max_y DECIMAL,
+		min_x REAL,
+		min_y REAL,
+		max_x REAL,
+		max_y REAL,
 		lastmodified INTEGER
 	);
 
