@@ -9,7 +9,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
-	"log"
+	_ "log"
 )
 
 type RTreeTableOptions struct {
@@ -97,11 +97,19 @@ func (t *RTreeTable) Schema() string {
 
 	/*
 
-	3.1.1. Column naming details
+		3.1.1. Column naming details
 
-	In the argments to "rtree" in the CREATE VIRTUAL TABLE statement, the names of the columns are taken from the first token of each argument. All subsequent tokens within each argument are silently ignored. This means, for example, that if you try to give a column a type affinity or add a constraint such as UNIQUE or NOT NULL or DEFAULT to a column, those extra tokens are accepted as valid, but they do not change the behavior of the rtree. In an RTREE virtual table, the first column always has a type affinity of INTEGER and all other data columns have a type affinity of NUMERIC.
+		In the argments to "rtree" in the CREATE VIRTUAL TABLE statement, the names of the columns are taken from the first token of each argument. All subsequent tokens within each argument are silently ignored. This means, for example, that if you try to give a column a type affinity or add a constraint such as UNIQUE or NOT NULL or DEFAULT to a column, those extra tokens are accepted as valid, but they do not change the behavior of the rtree. In an RTREE virtual table, the first column always has a type affinity of INTEGER and all other data columns have a type affinity of NUMERIC.
 
-	Recommended practice is to omit any extra tokens in the rtree specification. Let each argument to "rtree" be a single ordinary label that is the name of the corresponding column, and omit all other tokens from the argument list.
+		Recommended practice is to omit any extra tokens in the rtree specification. Let each argument to "rtree" be a single ordinary label that is the name of the corresponding column, and omit all other tokens from the argument list.
+
+			--
+
+			For example:
+
+			1477856011|-122.387908935547|37.6149787902832|-122.384384155273|37.6177368164062|0.0|1568838528.0
+
+			TBD: How to reconcile alternate geometry labels (storage and querying) with the primary key constraints...
 
 	*/
 
@@ -136,19 +144,11 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	}
 
 	str_id := f.Id()
-	is_alt := whosonfirst.IsAlt(f)
+	is_alt := whosonfirst.IsAlt(f) // this returns a boolean which is interpreted as a float by SQLite
 
 	if is_alt && !t.options.IndexAltFiles {
 		return nil
 	}
-
-	/*
-		int_is_alt := 0
-
-		if is_alt {
-			int_is_alt = 1
-		}
-	*/
 
 	lastmod := whosonfirst.LastModified(f)
 
@@ -182,8 +182,6 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 		sw := bbox.Min
 		ne := bbox.Max
-
-		log.Println(sql, str_id, sw.X, sw.Y, ne.X, ne.Y, is_alt, lastmod)
 
 		_, err = stmt.Exec(str_id, sw.X, sw.Y, ne.X, ne.Y, is_alt, lastmod)
 
