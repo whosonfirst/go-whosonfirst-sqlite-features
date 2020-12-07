@@ -74,7 +74,10 @@ SELECT CreateSpatialIndex('geometries', 'geom');
 CREATE INDEX geometries_by_lastmod ON geometries (lastmodified);`
 ```
 
-_Notes: In order to index geometries you will need to have the [Spatialite extension](https://www.gaia-gis.it/fossil/libspatialite/index) installed._
+#### Notes
+
+* In order to index the `geometries` table you will need to have the [Spatialite extension](https://www.gaia-gis.it/fossil/libspatialite/index) installed.
+* As of Decemeber 2020, I am no longer able to make this (indexing the `geometries` table) work under OS X. I am not sure if this is a `spatialite` thing or a `go-sqlite3` thing or something else. Any help resolving this issue would be welcome.
 
 ### names
 
@@ -119,7 +122,7 @@ CREATE VIRTUAL TABLE %s USING rtree (
 
 #### Notes
 
-Section `3.1.1` of the [SQLite RTree documentation](#) states:
+Section `3.1.1` of the [SQLite RTree documentation](https://www.sqlite.org/rtree.html) states:
 
 > In the argments to "rtree" in the CREATE VIRTUAL TABLE statement, the names of the columns are taken from the first token of each argument. All subsequent tokens within each argument are silently ignored. This means, for example, that if you try to give a column a type affinity or add a constraint such as UNIQUE or NOT NULL or DEFAULT to a column, those extra tokens are accepted as valid, but they do not change the behavior of the rtree. In an RTREE virtual table, the first column always has a type affinity of INTEGER and all other data columns have a type affinity of NUMERIC. Recommended practice is to omit any extra tokens in the rtree specification. Let each argument to "rtree" be a single ordinary label that is the name of the corresponding column, and omit all other tokens from the argument list.
 
@@ -196,3 +199,4 @@ These are documented in the [Dependencies and relationships section](https://git
 * https://sqlite.org/
 * https://www.gaia-gis.it/fossil/libspatialite/index
 * https://github.com/whosonfirst/go-whosonfirst-sqlite
+* https://github.com/whosonfirst/go-whosonfirst-sqlite-feature-index
