@@ -9,7 +9,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
-	_ "log"
+	"log"
 )
 
 type RTreeTableOptions struct {
@@ -33,10 +33,10 @@ type RTreeTable struct {
 
 type RTreeRow struct {
 	Id           int64
-	MinX float64
-	MinY float64
-	MaxX float64
-	MaxY float64
+	MinX         float64
+	MinY         float64
+	MaxX         float64
+	MaxY         float64
 	LastModified int64
 }
 
@@ -95,19 +95,27 @@ func (t *RTreeTable) Name() string {
 
 func (t *RTreeTable) Schema() string {
 
+	/*
+
+	3.1.1. Column naming details
+
+	In the argments to "rtree" in the CREATE VIRTUAL TABLE statement, the names of the columns are taken from the first token of each argument. All subsequent tokens within each argument are silently ignored. This means, for example, that if you try to give a column a type affinity or add a constraint such as UNIQUE or NOT NULL or DEFAULT to a column, those extra tokens are accepted as valid, but they do not change the behavior of the rtree. In an RTREE virtual table, the first column always has a type affinity of INTEGER and all other data columns have a type affinity of NUMERIC.
+
+	Recommended practice is to omit any extra tokens in the rtree specification. Let each argument to "rtree" be a single ordinary label that is the name of the corresponding column, and omit all other tokens from the argument list.
+
+	*/
+
 	sql := `CREATE VIRTUAL TABLE %s USING rtree (
-		id INTEGER NOT NULL PRIMARY KEY,
-		is_alt TINYINT,
-		min_x REAL,
-		min_y REAL,
-		max_x REAL,
-		max_y REAL,
-		lastmodified INTEGER
-	);
+		id,
+		min_x,
+		min_y,
+		max_x,
+		max_y,
+		is_alt,
+		lastmodified
+	);`
 
-	CREATE INDEX rtree_by_lastmod ON %s (lastmodified);`
-
-	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name())
+	return fmt.Sprintf(sql, t.Name())
 }
 
 func (t *RTreeTable) InitializeTable(db sqlite.Database) error {
@@ -134,6 +142,14 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		return nil
 	}
 
+	/*
+		int_is_alt := 0
+
+		if is_alt {
+			int_is_alt = 1
+		}
+	*/
+
 	lastmod := whosonfirst.LastModified(f)
 
 	bboxes, err := f.BoundingBoxes()
@@ -141,7 +157,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	if err != nil {
 		return err
 	}
-	
+
 	tx, err := conn.Begin()
 
 	if err != nil {
@@ -149,7 +165,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
-		id, is_alt, min_x, min_y, max_x, max_y, lastmodified
+		id, min_x, min_y, max_x, max_y, is_alt, lastmodified
 	) VALUES (
 		?, ?, ?, ?, ?, ?, ?
 	)`, t.Name())
@@ -166,13 +182,15 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 		sw := bbox.Min
 		ne := bbox.Max
-	
-		_, err = stmt.Exec(str_id, is_alt, sw.X, sw.Y, ne.X, ne.Y, lastmod)
+
+		log.Println(sql, str_id, sw.X, sw.Y, ne.X, ne.Y, is_alt, lastmod)
+
+		_, err = stmt.Exec(str_id, sw.X, sw.Y, ne.X, ne.Y, is_alt, lastmod)
 
 		if err != nil {
 			return err
 		}
 	}
-	
+
 	return tx.Commit()
 }
