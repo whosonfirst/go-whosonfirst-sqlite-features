@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
+	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
 	geojson_utils "github.com/whosonfirst/go-whosonfirst-geojson-v2/utils"
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
@@ -139,6 +140,13 @@ func (t *RTreeTable) IndexRecord(db sqlite.Database, i interface{}) error {
 }
 
 func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
+
+	switch geometry.Type(f) {
+	case "Polygon", "MultiPolygon":
+		// pass
+	default:
+		return nil
+	}
 
 	conn, err := db.Conn()
 
