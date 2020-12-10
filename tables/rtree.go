@@ -111,6 +111,7 @@ func (t *RTreeTable) Schema() string {
 
 		Auxiliary columns are marked with a "+" symbol before the column name. Auxiliary columns must come after all of the coordinate boundary columns. There is a limit of no more than 100 auxiliary columns. The following example shows an r-tree table with auxiliary columns that is equivalent to the two tables "demo_index" and "demo_data" above:
 
+		Note: Auxiliary columns must come at the end of a table definition
 	*/
 
 	sql := `CREATE VIRTUAL TABLE %s USING rtree (
@@ -120,9 +121,9 @@ func (t *RTreeTable) Schema() string {
 		max_x,
 		max_y,
 		+wof_id INTEGER,
-		is_alt,
-		+label TEXT,
-		lastmodified
+		+is_alt INTEGER,
+		+alt_label TEXT,
+		+lastmodified INTEGER
 	);`
 
 	return fmt.Sprintf(sql, t.Name())
@@ -152,7 +153,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		return nil
 	}
 
-	label := ""
+	alt_label := ""
 
 	if is_alt {
 
@@ -164,7 +165,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 			return errors.New("Missing src:alt_label property")
 		}
 
-		label = v
+		alt_label = v
 	}
 
 	lastmod := whosonfirst.LastModified(f)
@@ -182,9 +183,9 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
-		id, min_x, min_y, max_x, max_y, wof_id, is_alt, label, lastmodified
+		id, min_x, min_y, max_x, max_y, wof_id, is_alt, alt_label, lastmodified
 	) VALUES (
-		NULL, ?, ?, ?, ?, ?, ?
+		NULL, ?, ?, ?, ?, ?, ?, ?, ?
 	)`, t.Name())
 
 	stmt, err := tx.Prepare(sql)
@@ -200,7 +201,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		sw := bbox.Min
 		ne := bbox.Max
 
-		_, err = stmt.Exec(sw.X, sw.Y, ne.X, ne.Y, is_alt, wof_id, label, lastmod)
+		_, err = stmt.Exec(sw.X, sw.Y, ne.X, ne.Y, wof_id, is_alt, alt_label, lastmod)
 
 		if err != nil {
 			return err
