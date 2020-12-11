@@ -119,7 +119,7 @@ func (t *GeometriesTable) Schema() string {
 	CREATE UNIQUE INDEX by_id ON %s (id, alt_label);
 	CREATE INDEX geometries_by_lastmod ON %s (lastmodified);`
 
-	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name())
+	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name(), t.Name())
 }
 
 func (t *GeometriesTable) InitializeTable(db sqlite.Database) error {

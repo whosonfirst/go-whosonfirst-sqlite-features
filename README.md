@@ -66,9 +66,10 @@ CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
 
 ```
 CREATE TABLE geometries (
-	id INTEGER NOT NULL PRIMARY KEY,
-	is_alt TINYINT,
+	id INTEGER NOT NULL,
 	type TEXT,
+	is_alt TINYINT,
+	alt_label TEXT,
 	lastmodified INTEGER
 );
 
@@ -76,6 +77,7 @@ SELECT InitSpatialMetaData();
 SELECT AddGeometryColumn('geometries', 'geom', 4326, 'GEOMETRY', 'XY');
 SELECT CreateSpatialIndex('geometries', 'geom');
 
+CREATE UNIQUE INDEX by_id ON geometries (id, alt_label);
 CREATE INDEX geometries_by_lastmod ON geometries (lastmodified);`
 ```
 
