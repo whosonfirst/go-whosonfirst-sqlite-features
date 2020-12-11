@@ -118,8 +118,8 @@ func (t *RTreeTable) Schema() string {
 	sql := `CREATE VIRTUAL TABLE %s USING rtree (
 		id,
 		min_x,
-		min_y,
 		max_x,
+		min_y,
 		max_y,
 		+wof_id INTEGER,
 		+is_alt INTEGER,
@@ -191,7 +191,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
-		id, min_x, min_y, max_x, max_y, wof_id, is_alt, alt_label, lastmodified
+		id, min_x, max_x, min_y, max_y, wof_id, is_alt, alt_label, lastmodified
 	) VALUES (
 		NULL, ?, ?, ?, ?, ?, ?, ?, ?
 	)`, t.Name())
@@ -209,7 +209,7 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		sw := bbox.Min
 		ne := bbox.Max
 
-		_, err = stmt.Exec(sw.X, sw.Y, ne.X, ne.Y, wof_id, is_alt, alt_label, lastmod)
+		_, err = stmt.Exec(sw.X, ne.X, sw.Y, ne.Y, wof_id, is_alt, alt_label, lastmod)
 
 		if err != nil {
 			return err
