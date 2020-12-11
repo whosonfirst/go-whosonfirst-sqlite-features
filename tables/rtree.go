@@ -33,15 +33,6 @@ type RTreeTable struct {
 	options *RTreeTableOptions
 }
 
-type RTreeRow struct {
-	Id           int64
-	MinX         float64
-	MinY         float64
-	MaxX         float64
-	MaxY         float64
-	LastModified int64
-}
-
 func NewRTreeTable() (sqlite.Table, error) {
 
 	opts, err := DefaultRTreeTableOptions()
@@ -173,6 +164,9 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 	lastmod := whosonfirst.LastModified(f)
 
+	// TBD: Store polygon alongside bounding box in rtree table
+	// https://github.com/whosonfirst/go-whosonfirst-sqlite-features/issues/11
+	
 	bboxes, err := f.BoundingBoxes()
 
 	if err != nil {
