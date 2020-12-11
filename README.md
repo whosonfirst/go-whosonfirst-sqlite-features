@@ -115,8 +115,6 @@ CREATE INDEX names_by_wofid ON names (id);
 
 ### rtree
 
-_This is work in progress and probably not ready for serious use yet._
-
 ```
 CREATE VIRTUAL TABLE %s USING rtree (
 	id,
