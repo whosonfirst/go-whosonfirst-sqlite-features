@@ -110,16 +110,16 @@ CREATE INDEX names_by_wofid ON names (id);
 
 ```
 CREATE VIRTUAL TABLE %s USING rtree (
-		id,
-		min_x,
-		min_y,
-		max_x,
-		max_y,
-		+wof_id INTEGER,
-		+is_alt INTEGER,
-		+alt_label TEXT,
-		+lastmodified INTEGER
-	);
+	id,
+	min_x,
+	max_x,
+	min_y,
+	max_y,
+	+wof_id INTEGER,
+	+is_alt INTEGER,
+	+alt_label TEXT,
+	+lastmodified INTEGER
+);
 ```
 
 #### Notes
