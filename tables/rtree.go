@@ -8,7 +8,6 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	geojson_utils "github.com/whosonfirst/go-whosonfirst-geojson-v2/utils"
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
@@ -165,15 +164,11 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 	if is_alt {
 
-		// pending whosonfirst.AltLabel(f)
+		alt_label = whosonfirst.AltLabel(f)
 
-		v := geojson_utils.StringProperty(f.Bytes(), []string{"properties.src:alt_label"}, "")
-
-		if v == "" {
+		if alt_label == "" {
 			return errors.New("Missing src:alt_label property")
 		}
-
-		alt_label = v
 	}
 
 	lastmod := whosonfirst.LastModified(f)

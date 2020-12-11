@@ -49,12 +49,17 @@ CREATE INDEX ancestors_by_lastmod ON concordances (lastmodified);`
 
 ```
 CREATE TABLE geojson (
-	id INTEGER NOT NULL PRIMARY KEY,
+	id INTEGER NOT NULL,
 	body TEXT,
+	source TEXT,
+	is_alt BOOLEAN,
+	alt_label TEXT,
 	lastmodified INTEGER
 );
 
-CREATE INDEX geojson_by_lastmod ON geojson (lastmodified);
+CREATE UNIQUE INDEX geojson_by_id ON %s (id, source, alt_label);
+CREATE INDEX geojson_by_alt ON %s (id, is_alt, alt_label);
+CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
 ```
 
 ### geometries
