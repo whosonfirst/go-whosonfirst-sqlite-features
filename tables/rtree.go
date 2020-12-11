@@ -121,7 +121,7 @@ func (t *RTreeTable) Schema() string {
 		min_y,
 		max_y,
 		+wof_id INTEGER,
-		+is_alt INTEGER,
+		+is_alt TINYINT,
 		+alt_label TEXT,
 		+lastmodified INTEGER
 	);`
