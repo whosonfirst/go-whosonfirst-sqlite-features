@@ -192,6 +192,10 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 	defer stmt.Close()
 
+	// this should be updated to use go-whosonfirst-geojson-v2/geometry GeometryForFeature
+	// so that we're not translating between [][][]float64 and skleterjohn/geom things
+	// twice (20201214/thisisaaronland)
+	
 	for _, poly := range polygons {
 
 		exterior_ring := poly.ExteriorRing()
@@ -209,6 +213,8 @@ func (t *RTreeTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 			exterior_points = append(exterior_points, pt)
 		}
 
+		points = append(points, exterior_points)
+		
 		for _, interior_ring := range poly.InteriorRings() {
 
 			interior_points := make([][]float64, 0)
