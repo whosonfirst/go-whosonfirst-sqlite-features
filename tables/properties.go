@@ -143,7 +143,7 @@ func (t *PropertiesTable) IndexFeature(db sqlite.Database, f geojson.Feature) er
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 		id, body, is_alt, alt_label, lastmodified
 	) VALUES (
-		?, ?, ?, ?, ?, ?
+		?, ?, ?, ?, ?
 	)`, t.Name())
 
 	stmt, err := tx.Prepare(sql)
