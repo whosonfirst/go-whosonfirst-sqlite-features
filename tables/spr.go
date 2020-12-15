@@ -114,7 +114,7 @@ func (t *SPRTable) Name() string {
 func (t *SPRTable) Schema() string {
 
 	sql := `CREATE TABLE %[1]s (
-			id INTEGER NOT NULL PRIMARY KEY,
+			id INTEGER NOT NULL,
 			parent_id INTEGER,
 			name TEXT,
 			placetype TEXT,
@@ -138,6 +138,7 @@ func (t *SPRTable) Schema() string {
 			lastmodified INTEGER
 	);
 
+	CREATE UNIQUE INDEX spr_by_id ON %[1]s (id, alt_label);
 	CREATE INDEX spr_by_lastmod ON %[1]s (lastmodified);
 	CREATE INDEX spr_by_parent ON %[1]s (parent_id, is_current, lastmodified);
 	CREATE INDEX spr_by_placetype ON %[1]s (placetype, is_current, lastmodified);
@@ -181,6 +182,7 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		is_current, is_deprecated, is_ceased,
 		is_superseded, is_superseding,
 		superseded_by, supersedes,
+		is_alt, alt_label,
 		lastmodified
 		) VALUES (
 		?, ?, ?, ?,
