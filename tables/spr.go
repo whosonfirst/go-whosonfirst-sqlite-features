@@ -7,6 +7,7 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
+	_ "log"
 )
 
 type SPRTableOptions struct {
@@ -164,6 +165,10 @@ func (t *SPRTable) IndexRecord(db sqlite.Database, i interface{}) error {
 
 func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
+	if !t.options.IndexAltFiles {
+		return nil
+	}
+	
 	is_alt := whosonfirst.IsAlt(f)
 	alt_label := whosonfirst.AltLabel(f)
 
