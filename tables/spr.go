@@ -9,9 +9,23 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 )
 
+type SPRTableOptions struct {
+	IndexAltFiles bool
+}
+
+func DefaultSPRTableOptions() (*SPRTableOptions, error) {
+
+	opts := SPRTableOptions{
+		IndexAltFiles: false,
+	}
+
+	return &opts, nil
+}
+
 type SPRTable struct {
 	features.FeatureTable
-	name string
+	name    string
+	options *SPRTableOptions
 }
 
 type SPRRow struct {
@@ -39,9 +53,41 @@ type SPRRow struct {
 	LastModified  int64   // properties.wof:lastmodified INTEGER
 }
 
+func NewSPRTable() (sqlite.Table, error) {
+
+	opts, err := DefaultSPRTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSPRTableWithOptions(opts)
+}
+
+func NewSPRTableWithOptions(opts *SPRTableOptions) (sqlite.Table, error) {
+
+	t := SPRTable{
+		name:    "spr",
+		options: opts,
+	}
+
+	return &t, nil
+}
+
 func NewSPRTableWithDatabase(db sqlite.Database) (sqlite.Table, error) {
 
-	t, err := NewSPRTable()
+	opts, err := DefaultSPRTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewSPRTableWithDatabaseAndOptions(db, opts)
+}
+
+func NewSPRTableWithDatabaseAndOptions(db sqlite.Database, opts *SPRTableOptions) (sqlite.Table, error) {
+
+	t, err := NewSPRTableWithOptions(opts)
 
 	if err != nil {
 		return nil, err
@@ -54,15 +100,6 @@ func NewSPRTableWithDatabase(db sqlite.Database) (sqlite.Table, error) {
 	}
 
 	return t, nil
-}
-
-func NewSPRTable() (sqlite.Table, error) {
-
-	t := SPRTable{
-		name: "spr",
-	}
-
-	return &t, nil
 }
 
 func (t *SPRTable) InitializeTable(db sqlite.Database) error {
