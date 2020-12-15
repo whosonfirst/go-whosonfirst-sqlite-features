@@ -168,7 +168,7 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 	if !t.options.IndexAltFiles {
 		return nil
 	}
-	
+
 	is_alt := whosonfirst.IsAlt(f)
 	alt_label := whosonfirst.AltLabel(f)
 
