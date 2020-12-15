@@ -133,6 +133,8 @@ func (t *SPRTable) Schema() string {
 			is_superseding INTEGER,
 			superseded_by TEXT,
 			supersedes TEXT,
+			is_alt TINYINT,
+			alt_label TEXT,
 			lastmodified INTEGER
 	);
 
@@ -162,10 +164,7 @@ func (t *SPRTable) IndexRecord(db sqlite.Database, i interface{}) error {
 func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 
 	is_alt := whosonfirst.IsAlt(f)
-
-	if is_alt {
-		return nil
-	}
+	alt_label := whosonfirst.AltLabel(f)
 
 	spr, err := f.SPR()
 
@@ -192,6 +191,7 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		?, ?, ?,
 		?, ?,
 		?, ?,
+		?, ?,
 		?
 		)`, t.Name()) // ON CONFLICT DO BLAH BLAH BLAH
 
@@ -204,6 +204,7 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		spr.IsCurrent().Flag(), spr.IsDeprecated().Flag(), spr.IsCeased().Flag(),
 		spr.IsSuperseded().Flag(), spr.IsSuperseding().Flag(),
 		"", "",
+		is_alt, alt_label,
 		spr.LastModified(),
 	}
 

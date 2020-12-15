@@ -177,6 +177,8 @@ CREATE TABLE spr (
 	is_superseding INTEGER,
 	superseded_by TEXT,
 	supersedes TEXT,
+	is_alt TINYINT,
+	alt_label TEXT,	
 	lastmodified INTEGER
 );
 
