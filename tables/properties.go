@@ -98,9 +98,9 @@ func (t *PropertiesTable) Schema() string {
 		lastmodified INTEGER
 	);
 
-	CREATE UNIQUE INDEX geojson_by_id ON %s (id, alt_label);
-	CREATE INDEX geojson_by_alt ON %s (id, is_alt, alt_label);
-	CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
+	CREATE UNIQUE INDEX properties_by_id ON %s (id, alt_label);
+	CREATE INDEX properties_by_alt ON %s (id, is_alt, alt_label);
+	CREATE INDEX properties_by_lastmod ON %s (lastmodified);
 	`
 
 	return fmt.Sprintf(sql, t.Name(), t.Name(), t.Name(), t.Name())
