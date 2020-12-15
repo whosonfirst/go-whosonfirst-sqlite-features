@@ -62,6 +62,24 @@ CREATE INDEX geojson_by_alt ON %s (id, is_alt, alt_label);
 CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
 ```
 
+### geometry
+
+```
+CREATE TABLE geometry (
+	id INTEGER NOT NULL,
+	body TEXT,
+	is_alt BOOLEAN,
+	alt_label TEXT,
+	lastmodified INTEGER
+);
+
+CREATE UNIQUE INDEX geojson_by_id ON %s (id, alt_label);
+CREATE INDEX geojson_by_alt ON %s (id, is_alt, alt_label);
+CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
+```
+
+This table indexes only the `geometry` elements for Who's On First records. This table is principally used in concert with the `rtree` for performance reasons.
+
 ### geometries
 
 ```
@@ -112,6 +130,24 @@ CREATE INDEX names_by_name ON names (name, placetype, country);
 CREATE INDEX names_by_name_private ON names (name, privateuse, placetype, country);
 CREATE INDEX names_by_wofid ON names (id);
 ```
+
+### properties
+
+```
+CREATE TABLE properties (
+	id INTEGER NOT NULL,
+	body TEXT,
+	is_alt BOOLEAN,
+	alt_label TEXT,
+	lastmodified INTEGER
+);
+
+CREATE UNIQUE INDEX geojson_by_id ON %s (id, alt_label);
+CREATE INDEX geojson_by_alt ON %s (id, is_alt, alt_label);
+CREATE INDEX geojson_by_lastmod ON %s (lastmodified);
+```
+
+This table indexes only the `properties` elements for Who's On First records. This table is principally used in concert with the `rtree` for performance reasons.
 
 ### rtree
 
