@@ -5,7 +5,8 @@ import (
 )
 
 type CommonTablesOptions struct {
-	GeoJSON *GeoJSONTableOptions
+	GeoJSON       *GeoJSONTableOptions // DEPRECATED
+	IndexAltFiles bool
 }
 
 func CommonTablesWithDatabase(db sqlite.Database) ([]sqlite.Table, error) {
@@ -17,7 +18,8 @@ func CommonTablesWithDatabase(db sqlite.Database) ([]sqlite.Table, error) {
 	}
 
 	table_opts := &CommonTablesOptions{
-		GeoJSON: geojson_opts,
+		GeoJSON:       geojson_opts,
+		IndexAltFiles: false,
 	}
 
 	return CommonTablesWithDatabaseAndOptions(db, table_opts)
@@ -27,7 +29,26 @@ func CommonTablesWithDatabaseAndOptions(db sqlite.Database, table_opts *CommonTa
 
 	to_index := make([]sqlite.Table, 0)
 
-	gt, err := NewGeoJSONTableWithDatabaseAndOptions(db, table_opts.GeoJSON)
+	var geojson_opts *GeoJSONTableOptions
+
+	// table_opts.GeoJSON is deprecated but maintained for backwards compatbility
+	// (20201224/thisisaaronland)
+
+	if table_opts.GeoJSON != nil {
+		geojson_opts = table_opts.GeoJSON
+	} else {
+
+		opts, err := DefaultGeoJSONTableOptions()
+
+		if err != nil {
+			return nil, err
+		}
+
+		opts.IndexAltFiles = table_opts.IndexAltFiles
+		geojson_opts = opts
+	}
+
+	gt, err := NewGeoJSONTableWithDatabaseAndOptions(db, geojson_opts)
 
 	if err != nil {
 		return nil, err
@@ -35,7 +56,15 @@ func CommonTablesWithDatabaseAndOptions(db sqlite.Database, table_opts *CommonTa
 
 	to_index = append(to_index, gt)
 
-	st, err := NewSPRTableWithDatabase(db)
+	st_opts, err := DefaultSPRTableOptions()
+
+	if err != nil {
+		return nil, err
+	}
+
+	st_opts.IndexAltFiles = table_opts.IndexAltFiles
+
+	st, err := NewSPRTableWithDatabaseAndOptions(db, st_opts)
 
 	if err != nil {
 		return nil, err
