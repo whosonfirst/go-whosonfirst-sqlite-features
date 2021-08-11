@@ -4,10 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/aaronland/go-sqlite/database"
-	"github.com/aaronland/go-sqlite/query"	
-	"log"
+	"github.com/aaronland/go-sqlite/query"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/flags"
 	"io"
+	"log"
 	"os"
 	"strings"
 )
