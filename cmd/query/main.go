@@ -1,12 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/aaronland/go-sqlite/database"
 	"github.com/aaronland/go-sqlite/query"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/flags"
-	"io"
 	"log"
 	"os"
 	"strings"
@@ -24,11 +24,11 @@ func main() {
 	var table = flag.String("table", "search", "The name of the SQLite table to query against.")
 	var col = flag.String("column", "names_all", "The 'names_*' column to query against. Valid columns are: names_all, names_preferred, names_variant, names_colloquial.")
 
-	var output = flag.String("output", "", "A valid path to write (CSV) results to. If empty results are written to STDOUT.")
-
 	flag.Parse()
 
-	db, err := database.NewDBWithDriver(*driver, *dsn)
+	ctx := context.Background()
+
+	db, err := database.NewDBWithDriver(ctx, *driver, *dsn)
 
 	if err != nil {
 		log.Fatalf("Unable to create database (%s) because %s", *dsn, err)
@@ -43,14 +43,14 @@ func main() {
 	}
 
 	match := fmt.Sprintf("%s MATCH ?", *col)
-	query := strings.Join(flag.Args(), " ")
+	query_str := strings.Join(flag.Args(), " ")
 
 	conditions := []string{
 		match,
 	}
 
 	args := []interface{}{
-		query,
+		query_str,
 	}
 
 	existential := map[string]string{
@@ -60,16 +60,16 @@ func main() {
 		"is_superseded": *is_superseded,
 	}
 
-	for label, flags := range existential {
+	for label, ex_flags := range existential {
 
-		if flags == "" {
+		if ex_flags == "" {
 			continue
 		}
 
-		fl_conditions, fl_args, err := flags.ExistentialFlagsToQueryConditions(label, flags)
+		fl_conditions, fl_args, err := flags.ExistentialFlagsToQueryConditions(label, ex_flags)
 
 		if err != nil {
-			log.Fatalf("Invalid '%s' flags (%s) %s", label, flags, err)
+			log.Fatalf("Invalid '%s' flags (%s) %v", label, ex_flags, err)
 		}
 
 		conditions = append(conditions, fl_conditions)
@@ -82,7 +82,7 @@ func main() {
 	where := strings.Join(conditions, " AND ")
 
 	sql := fmt.Sprintf("SELECT id,name FROM %s WHERE %s", *table, where)
-	rows, err := conn.Query(ctx, sql, args...)
+	rows, err := conn.Query(sql, args...)
 
 	if err != nil {
 		log.Fatalf("Failed to query database (%s) because %s", sql, err)
