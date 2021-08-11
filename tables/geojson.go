@@ -2,11 +2,10 @@ package tables
 
 import (
 	"fmt"
+	"github.com/aaronland/go-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 )
 
 type GeoJSONTableOptions struct {
@@ -108,7 +107,7 @@ func (t *GeoJSONTable) Schema() string {
 
 func (t *GeoJSONTable) InitializeTable(db sqlite.Database) error {
 
-	return utils.CreateTableIfNecessary(db, t)
+	return sqlite.CreateTableIfNecessary(db, t)
 }
 
 func (t *GeoJSONTable) IndexRecord(db sqlite.Database, i interface{}) error {

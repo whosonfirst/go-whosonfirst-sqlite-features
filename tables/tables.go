@@ -1,7 +1,7 @@
 package tables
 
 import (
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
+	"github.com/aaronland/go-sqlite"
 )
 
 type TableOptions struct {

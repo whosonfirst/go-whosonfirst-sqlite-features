@@ -3,11 +3,10 @@ package tables
 import (
 	"errors"
 	"fmt"
+	"github.com/aaronland/go-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 	_ "log"
 	"strconv"
 	"strings"
@@ -83,7 +82,7 @@ func NewSPRTableWithDatabaseAndOptions(db sqlite.Database, opts *SPRTableOptions
 
 func (t *SPRTable) InitializeTable(db sqlite.Database) error {
 
-	return utils.CreateTableIfNecessary(db, t)
+	return sqlite.CreateTableIfNecessary(db, t)
 }
 
 func (t *SPRTable) Name() string {
@@ -191,11 +190,11 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 		?, ?,
 		?
 		)`, t.Name()) // ON CONFLICT DO BLAH BLAH BLAH
-	
-	superseded_by := int64ToString(spr.SupersededBy())	
+
+	superseded_by := int64ToString(spr.SupersededBy())
 	supersedes := int64ToString(spr.Supersedes())
-	belongs_to := int64ToString(spr.BelongsTo())		
-	
+	belongs_to := int64ToString(spr.BelongsTo())
+
 	args := []interface{}{
 		spr.Id(), spr.ParentId(), spr.Name(), spr.Placetype(),
 		spr.Inception().String(), spr.Cessation().String(),
@@ -240,7 +239,7 @@ func (t *SPRTable) IndexFeature(db sqlite.Database, f geojson.Feature) error {
 }
 
 func int64ToString(ints []int64) string {
-	
+
 	str_ints := make([]string, len(ints))
 
 	for idx, i := range ints {

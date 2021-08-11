@@ -2,11 +2,10 @@ package tables
 
 import (
 	"fmt"
+	"github.com/aaronland/go-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 	"strings"
 )
 
@@ -70,7 +69,7 @@ func (t *AncestorsTable) Schema() string {
 
 func (t *AncestorsTable) InitializeTable(db sqlite.Database) error {
 
-	return utils.CreateTableIfNecessary(db, t)
+	return sqlite.CreateTableIfNecessary(db, t)
 }
 
 func (t *AncestorsTable) IndexRecord(db sqlite.Database, i interface{}) error {

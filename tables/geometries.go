@@ -2,15 +2,14 @@ package tables
 
 import (
 	"fmt"
+	"github.com/aaronland/go-sqlite"
 	"github.com/twpayne/go-geom"
 	gogeom_geojson "github.com/twpayne/go-geom/encoding/geojson"
 	"github.com/twpayne/go-geom/encoding/wkt"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
 	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
-	"github.com/whosonfirst/go-whosonfirst-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
-	"github.com/whosonfirst/go-whosonfirst-sqlite/utils"
 	_ "log"
 )
 
@@ -124,7 +123,7 @@ func (t *GeometriesTable) Schema() string {
 
 func (t *GeometriesTable) InitializeTable(db sqlite.Database) error {
 
-	return utils.CreateTableIfNecessary(db, t)
+	return sqlite.CreateTableIfNecessary(db, t)
 }
 
 func (t *GeometriesTable) IndexRecord(db sqlite.Database, i interface{}) error {
