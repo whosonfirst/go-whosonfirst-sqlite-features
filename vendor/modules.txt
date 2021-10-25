@@ -1,4 +1,4 @@
-# github.com/aaronland/go-sqlite v0.0.5
+# github.com/aaronland/go-sqlite v0.1.0
 ## explicit
 github.com/aaronland/go-sqlite
 github.com/aaronland/go-sqlite/database
@@ -7,18 +7,14 @@ github.com/aaronland/go-sqlite/query
 github.com/mattn/go-sqlite3
 # github.com/mmcloughlin/geohash v0.10.0
 github.com/mmcloughlin/geohash
-# github.com/psanford/sqlite3vfs v0.0.0-20210823054414-6197b9fad12f
-github.com/psanford/sqlite3vfs
-# github.com/psanford/sqlite3vfshttp v0.0.0-20210815150654-07be1ade312e
-github.com/psanford/sqlite3vfshttp
 # github.com/sfomuseum/go-edtf v0.2.3
 github.com/sfomuseum/go-edtf
 # github.com/skelterjohn/geom v0.0.0-20180103142417-96f3e8a219c5
 github.com/skelterjohn/geom
-# github.com/tidwall/gjson v1.9.2
+# github.com/tidwall/gjson v1.10.2
 ## explicit
 github.com/tidwall/gjson
-# github.com/tidwall/match v1.1.0
+# github.com/tidwall/match v1.1.1
 github.com/tidwall/match
 # github.com/tidwall/pretty v1.2.0
 github.com/tidwall/pretty
