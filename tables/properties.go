@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"github.com/aaronland/go-sqlite"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
 
@@ -112,10 +112,16 @@ func (t *PropertiesTable) InitializeTable(ctx context.Context, db sqlite.Databas
 }
 
 func (t *PropertiesTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *PropertiesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *PropertiesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
+
+	is_alt := alt.IsAlt(f)
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
 
 	conn, err := db.Conn()
 
@@ -123,16 +129,19 @@ func (t *PropertiesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 		return err
 	}
 
-	str_id := f.Id()
+	id, err := properties.Id(f)
 
-	is_alt := whosonfirst.IsAlt(f)
-	alt_label := whosonfirst.AltLabel(f)
-
-	if is_alt && !t.options.IndexAltFiles {
-		return nil
+	if err != nil {
+		return fmt.Errorf("Failed to derive ID, %w", id)
 	}
 
-	lastmod := whosonfirst.LastModified(f)
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to derive alt label, %w", id)
+	}
+
+	lastmod := properties.LastModified(f)
 
 	tx, err := conn.Begin()
 
@@ -154,10 +163,10 @@ func (t *PropertiesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 
 	defer stmt.Close()
 
-	rsp_props := gjson.GetBytes(f.Bytes(), "properties")
+	rsp_props := gjson.GetBytes(f, "properties")
 	str_props := rsp_props.String()
 
-	_, err = stmt.Exec(str_id, str_props, is_alt, alt_label, lastmod)
+	_, err = stmt.Exec(id, str_props, is_alt, alt_label, lastmod)
 
 	if err != nil {
 		return err
