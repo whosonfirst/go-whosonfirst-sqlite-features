@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"	
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
 
@@ -65,14 +65,12 @@ func (t *SupersedesTable) InitializeTable(ctx context.Context, db sqlite.Databas
 }
 
 func (t *SupersedesTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *SupersedesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *SupersedesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := whosonfirst.IsAlt(f)
-
-	if is_alt {
+	if alt.IsAlt(f) {
 		return nil
 	}
 
@@ -88,8 +86,13 @@ func (t *SupersedesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 		return err
 	}
 
-	id := whosonfirst.Id(f)
-	lastmod := whosonfirst.LastModified(f)
+	id, err := properties.Id(f)
+
+	if err != nil {
+		return err
+	}
+
+	lastmod := properties.LastModified(f)
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 				id, superseded_id, superseded_by_id, lastmodified
@@ -105,7 +108,7 @@ func (t *SupersedesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 
 	defer stmt.Close()
 
-	superseded_by := whosonfirst.SupersededBy(f)
+	superseded_by := properties.SupersededBy(f)
 
 	for _, other_id := range superseded_by {
 
@@ -117,7 +120,7 @@ func (t *SupersedesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 
 	}
 
-	supersedes := whosonfirst.Supersedes(f)
+	supersedes := properties.Supersedes(f)
 
 	for _, other_id := range supersedes {
 
