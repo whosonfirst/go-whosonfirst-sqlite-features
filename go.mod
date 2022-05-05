@@ -6,6 +6,7 @@ require (
 	github.com/aaronland/go-sqlite v0.1.1
 	github.com/tidwall/gjson v1.14.1
 	github.com/twpayne/go-geom v1.4.1
+	github.com/whosonfirst/go-whosonfirst-feature v0.0.21
 	github.com/whosonfirst/go-whosonfirst-flags v0.4.3
 	github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.16.4
 	github.com/whosonfirst/go-whosonfirst-names v0.1.0

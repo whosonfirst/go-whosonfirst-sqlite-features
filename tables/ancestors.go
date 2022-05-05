@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"strings"
 )
@@ -74,30 +74,34 @@ func (t *AncestorsTable) InitializeTable(ctx context.Context, db sqlite.Database
 }
 
 func (t *AncestorsTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := whosonfirst.IsAlt(f)
+	is_alt := alt.IsAlt(f)
 
 	if is_alt {
 		return nil
 	}
 
+	id, err := properties.Id(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to derive ID, %w", err)
+	}
+	
 	conn, err := db.Conn()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to establish database connection, %w", err)
 	}
 
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to begin transaction, %w", err)
 	}
-
-	id := f.Id()
 
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
 
@@ -115,10 +119,8 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 		return err
 	}
 
-	str_id := f.Id()
-
-	hierarchies := whosonfirst.Hierarchies(f)
-	lastmod := whosonfirst.LastModified(f)
+	hierarchies := properties.Hierarchies(f)
+	lastmod := properties.LastModified(f)
 
 	for _, h := range hierarchies {
 
@@ -140,7 +142,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 
 			defer stmt.Close()
 
-			_, err = stmt.Exec(str_id, ancestor_id, ancestor_placetype, lastmod)
+			_, err = stmt.Exec(id, ancestor_id, ancestor_placetype, lastmod)
 
 			if err != nil {
 				return err
