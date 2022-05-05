@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
 
@@ -112,10 +112,16 @@ func (t *GeoJSONTable) InitializeTable(ctx context.Context, db sqlite.Database) 
 }
 
 func (t *GeoJSONTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
+
+	is_alt := alt.IsAlt(f)
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
 
 	conn, err := db.Conn()
 
@@ -123,18 +129,25 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f g
 		return err
 	}
 
-	str_id := f.Id()
-	body := f.Bytes()
+	id, err := properties.Id(f)
 
-	source := whosonfirst.Source(f)
-	is_alt := whosonfirst.IsAlt(f)
-	alt_label := whosonfirst.AltLabel(f)
-
-	if is_alt && !t.options.IndexAltFiles {
-		return nil
+	if err != nil {
+		return fmt.Errorf("Failed to determine ID, %w", err)
 	}
 
-	lastmod := whosonfirst.LastModified(f)
+	source, err := properties.Source(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to determine source, %w", err)
+	}
+
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to determine alt label, %w", err)
+	}
+
+	lastmod := properties.LastModified(f)
 
 	tx, err := conn.Begin()
 
@@ -156,9 +169,9 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f g
 
 	defer stmt.Close()
 
-	str_body := string(body)
+	str_body := string(f)
 
-	_, err = stmt.Exec(str_id, str_body, source, is_alt, alt_label, lastmod)
+	_, err = stmt.Exec(id, str_body, source, is_alt, alt_label, lastmod)
 
 	if err != nil {
 		return err

@@ -7,7 +7,7 @@ github.com/aaronland/go-sqlite/query
 github.com/mattn/go-sqlite3
 # github.com/mmcloughlin/geohash v0.10.0
 github.com/mmcloughlin/geohash
-# github.com/paulmach/orb v0.5.0
+# github.com/paulmach/orb v0.6.0
 github.com/paulmach/orb
 # github.com/sfomuseum/go-edtf v0.3.1
 github.com/sfomuseum/go-edtf
@@ -27,7 +27,7 @@ github.com/twpayne/go-geom/encoding/geojson
 github.com/twpayne/go-geom/encoding/wkt
 # github.com/whosonfirst/go-rfc-5646 v0.1.0
 github.com/whosonfirst/go-rfc-5646
-# github.com/whosonfirst/go-whosonfirst-feature v0.0.21
+# github.com/whosonfirst/go-whosonfirst-feature v0.0.22
 ## explicit
 github.com/whosonfirst/go-whosonfirst-feature/alt
 github.com/whosonfirst/go-whosonfirst-feature/properties
