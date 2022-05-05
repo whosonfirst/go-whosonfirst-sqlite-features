@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-names/tags"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
@@ -96,14 +96,12 @@ func (t *NamesTable) InitializeTable(ctx context.Context, db sqlite.Database) er
 }
 
 func (t *NamesTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := whosonfirst.IsAlt(f)
-
-	if is_alt {
+	if alt.IsAlt(f) {
 		return nil
 	}
 
@@ -119,7 +117,11 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geo
 		return err
 	}
 
-	id := f.Id()
+	id, err := properties.Id(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to derive ID, %w", err)
+	}
 
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
 
@@ -137,11 +139,16 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geo
 		return err
 	}
 
-	pt := f.Placetype()
-	co := whosonfirst.Country(f)
+	pt, err := properties.Placetype(f)
 
-	lastmod := whosonfirst.LastModified(f)
-	names := whosonfirst.Names(f)
+	if err != nil {
+		return fmt.Errorf("Failed to derive placetype, %w", err)
+	}
+
+	co := properties.Country(f)
+
+	lastmod := properties.LastModified(f)
+	names := properties.Names(f)
 
 	for tag, names := range names {
 
