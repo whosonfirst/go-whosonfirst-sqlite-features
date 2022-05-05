@@ -1,12 +1,14 @@
 package tables
 
+// Necessary for use with the rtree table(s)
+
 import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
 	"github.com/tidwall/gjson"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
 
@@ -112,10 +114,16 @@ func (t *GeometryTable) InitializeTable(ctx context.Context, db sqlite.Database)
 }
 
 func (t *GeometryTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *GeometryTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *GeometryTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
+
+	is_alt := alt.IsAlt(f)
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
 
 	conn, err := db.Conn()
 
@@ -123,16 +131,19 @@ func (t *GeometryTable) IndexFeature(ctx context.Context, db sqlite.Database, f 
 		return err
 	}
 
-	str_id := f.Id()
+	id, err := properties.Id(f)
 
-	is_alt := whosonfirst.IsAlt(f)
-	alt_label := whosonfirst.AltLabel(f)
-
-	if is_alt && !t.options.IndexAltFiles {
-		return nil
+	if err != nil {
+		return fmt.Errorf("Failed to determine ID, %w", err)
 	}
 
-	lastmod := whosonfirst.LastModified(f)
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to determine alt label, %w", err)
+	}
+
+	lastmod := properties.LastModified(f)
 
 	tx, err := conn.Begin()
 
@@ -154,10 +165,10 @@ func (t *GeometryTable) IndexFeature(ctx context.Context, db sqlite.Database, f 
 
 	defer stmt.Close()
 
-	rsp_geom := gjson.GetBytes(f.Bytes(), "geometry")
+	rsp_geom := gjson.GetBytes(f, "geometry")
 	str_geom := rsp_geom.String()
 
-	_, err = stmt.Exec(str_id, str_geom, is_alt, alt_label, lastmod)
+	_, err = stmt.Exec(id, str_geom, is_alt, alt_label, lastmod)
 
 	if err != nil {
 		return err
