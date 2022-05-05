@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	_ "log"
 	"strconv"
@@ -141,25 +141,27 @@ func (t *SPRTable) Schema() string {
 }
 
 func (t *SPRTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := whosonfirst.IsAlt(f)
-	alt_label := whosonfirst.AltLabel(f)
+	is_alt := properties.IsAlt(f)
 
 	if is_alt {
 
 		if !t.options.IndexAltFiles {
 			return nil
 		}
-
-		if alt_label == "" {
-			return errors.New("Missing wof:alt_label property")
-		}
 	}
 
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return err
+	}
+
+	// OH GOD... FIX ME
 	spr, err := f.SPR()
 
 	if err != nil {

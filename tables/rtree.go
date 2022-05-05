@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	_ "log"
 )
@@ -128,12 +128,24 @@ func (t *RTreeTable) InitializeTable(ctx context.Context, db sqlite.Database) er
 }
 
 func (t *RTreeTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	switch geometry.Type(f) {
+	is_alt := alt.IsAlt(f) // this returns a boolean which is interpreted as a float by SQLite
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
+
+	geom_type, err := geometry.Type(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to derive geometry type, %w", err)
+	}
+
+	switch geom_type {
 	case "Polygon", "MultiPolygon":
 		// pass
 	default:
@@ -146,31 +158,34 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f geo
 		return err
 	}
 
-	wof_id := f.Id()
-	is_alt := whosonfirst.IsAlt(f) // this returns a boolean which is interpreted as a float by SQLite
+	wof_id, err := properties.Id(f)
 
-	if is_alt && !t.options.IndexAltFiles {
-		return nil
+	if err != nil {
+		return fmt.Errorf("Failed to derive ID, %w", err)
 	}
 
 	alt_label := ""
 
 	if is_alt {
 
-		alt_label = whosonfirst.AltLabel(f)
+		label, err = properties.AltLabel(f)
 
-		if alt_label == "" {
-			return errors.New("Missing src:alt_label property")
+		if err != nil {
+			return fmt.Errorf("Failed to derive alt label, %w", err)
 		}
+
+		alt_label = label
 	}
 
-	lastmod := whosonfirst.LastModified(f)
+	lastmod := properties.LastModified(f)
 
-	polygons, err := f.Polygons()
+	geojson_geom, err := geometry.Geometry(f)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to derive geometry, %w", err)
 	}
+
+	orb_geom := geojson_geom.Geometry()
 
 	tx, err := conn.Begin()
 
