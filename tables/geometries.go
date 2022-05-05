@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/twpayne/go-geom"
-	gogeom_geojson "github.com/twpayne/go-geom/encoding/geojson"
-	"github.com/twpayne/go-geom/encoding/wkt"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/geometry"
-	"github.com/whosonfirst/go-whosonfirst-geojson-v2/properties/whosonfirst"
+	"github.com/paulmach/orb/encoding/wkt"
+	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	_ "log"
 )
@@ -128,10 +126,16 @@ func (t *GeometriesTable) InitializeTable(ctx context.Context, db sqlite.Databas
 }
 
 func (t *GeometriesTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {
-	return t.IndexFeature(ctx, db, i.(geojson.Feature))
+	return t.IndexFeature(ctx, db, i.([]byte))
 }
 
-func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, f geojson.Feature) error {
+func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
+
+	is_alt := alt.IsAlt(f)
+
+	if is_alt && !t.options.IndexAltFiles {
+		return nil
+	}
 
 	conn, err := db.Conn()
 
@@ -139,15 +143,19 @@ func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 		return err
 	}
 
-	str_id := f.Id()
-	is_alt := whosonfirst.IsAlt(f)
-	alt_label := whosonfirst.AltLabel(f)
+	id, err := properties.Id(f)
 
-	if is_alt && !t.options.IndexAltFiles {
-		return nil
+	if err != nil {
+		return fmt.Errorf("Failed to derive ID, %w", err)
 	}
 
-	lastmod := whosonfirst.LastModified(f)
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return fmt.Errorf("Failed to derive alt label, %w", err)
+	}
+
+	lastmod := properties.LastModified(f)
 
 	tx, err := conn.Begin()
 
@@ -155,29 +163,15 @@ func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 		return err
 	}
 
-	str_geom, err := geometry.ToString(f)
+	geojson_geom, err := geometry.Geometry(f)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("Failed to derive geometry, %w", err)
 	}
 
-	// but wait! there's more!! for reasons I've forgotten (simonw told me)
-	// the spatialite doesn't really like indexing GeomFromGeoJSON but also
-	// doesn't complain about it - it just chugs along happily filling your
-	// database with null geometries so we're going to take advantage of the
-	// handy "go-geom" package to convert the GeoJSON geometry in to WKT -
-	// it is "one more thing" to import and maybe it would be better to just
-	// write a custom converter but not today...
-	// (20180122/thisisaaronland)
+	orb_geom := geojson_geom.Geometry()
 
-	var g geom.T
-	err = gogeom_geojson.Unmarshal([]byte(str_geom), &g)
-
-	if err != nil {
-		return err
-	}
-
-	str_wkt, err := wkt.Marshal(g)
+	str_wkt := wkt.MarshalString(orb_geom)
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 		id, is_alt, alt_label, type, geom, lastmodified
@@ -195,7 +189,7 @@ func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 
 	geom_type := "common"
 
-	_, err = stmt.Exec(str_id, is_alt, alt_label, geom_type, lastmod)
+	_, err = stmt.Exec(id, is_alt, alt_label, geom_type, lastmod)
 
 	if err != nil {
 		return err
