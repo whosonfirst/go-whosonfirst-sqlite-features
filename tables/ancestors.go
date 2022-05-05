@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
-	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 	"strings"
 )
@@ -79,9 +79,7 @@ func (t *AncestorsTable) IndexRecord(ctx context.Context, db sqlite.Database, i 
 
 func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := alt.IsAlt(f)
-
-	if is_alt {
+	if alt.IsAlt(f) {
 		return nil
 	}
 
@@ -90,7 +88,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	if err != nil {
 		return fmt.Errorf("Failed to derive ID, %w", err)
 	}
-	
+
 	conn, err := db.Conn()
 
 	if err != nil {
