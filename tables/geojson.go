@@ -10,13 +10,15 @@ import (
 )
 
 type GeoJSONTableOptions struct {
-	IndexAltFiles bool
+	IndexAltFiles          bool
+	AllowMissingSourceGeom bool
 }
 
 func DefaultGeoJSONTableOptions() (*GeoJSONTableOptions, error) {
 
 	opts := GeoJSONTableOptions{
-		IndexAltFiles: false,
+		IndexAltFiles:          false,
+		AllowMissingSourceGeom: true,
 	}
 
 	return &opts, nil
@@ -132,7 +134,12 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f [
 	source, err := properties.Source(f)
 
 	if err != nil {
-		return MissingPropertyError(t, "source", err)
+
+		if !t.options.AllowMissingSourceGeom {
+			return MissingPropertyError(t, "source", err)
+		}
+
+		source = "unknown"
 	}
 
 	alt_label, err := properties.AltLabel(f)
