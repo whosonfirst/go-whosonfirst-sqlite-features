@@ -123,36 +123,36 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f [
 		return nil
 	}
 
-	conn, err := db.Conn()
-
-	if err != nil {
-		return err
-	}
-
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to determine ID, %w", err))
+		return MissingPropertyError(t, "id", err)
 	}
 
 	source, err := properties.Source(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to determine source, %w", err))
+		return MissingPropertyError(t, "source", err)
 	}
 
 	alt_label, err := properties.AltLabel(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to determine alt label, %w", err))
+		return MissingPropertyError(t, "alt label", err)
 	}
 
 	lastmod := properties.LastModified(f)
 
+	conn, err := db.Conn()
+
+	if err != nil {
+		return DatabaseConnectionError(t, err)
+	}
+
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return err
+		return BeginTransactionError(t, err)
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
@@ -164,7 +164,7 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f [
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -174,8 +174,14 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f [
 	_, err = stmt.Exec(id, str_body, source, is_alt, alt_label, lastmod)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }

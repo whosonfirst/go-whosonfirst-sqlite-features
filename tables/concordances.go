@@ -32,7 +32,7 @@ func NewConcordancesTableWithDatabase(ctx context.Context, db sqlite.Database) (
 	err = t.InitializeTable(ctx, db)
 
 	if err != nil {
-		return nil, err
+		return nil, InitializeTableError(t, err)
 	}
 
 	return t, nil
@@ -86,19 +86,19 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to derive ID, %w", err))
+		return MissingPropertyError(t, "id", err)
 	}
 
 	conn, err := db.Conn()
 
 	if err != nil {
-		return err
+		return DatabaseConnectionError(t, err)
 	}
 
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return err
+		return BeginTransactionError(t, err)
 	}
 
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
@@ -106,7 +106,7 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -114,7 +114,7 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 	_, err = stmt.Exec(id)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
 	concordances := properties.Concordances(f)
@@ -131,7 +131,7 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 		stmt, err := tx.Prepare(sql)
 
 		if err != nil {
-			return err
+			return PrepareStatementError(t, err)
 		}
 
 		defer stmt.Close()
@@ -139,9 +139,15 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 		_, err = stmt.Exec(id, other_id, other_source, lastmod)
 
 		if err != nil {
-			return err
+			return ExecuteStatementError(t, err)
 		}
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }
