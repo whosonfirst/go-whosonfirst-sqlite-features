@@ -1,6 +1,7 @@
 package tables
 
 // Necessary for use with the rtree table(s)
+// But is it really?
 
 import (
 	"context"

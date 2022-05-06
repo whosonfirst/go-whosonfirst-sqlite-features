@@ -1,3 +1,5 @@
+// package tables implements the `FeatureTable interface` interface for indexing
+// Who's On First Feature records in SQLite database tables.
 package tables
 
 import (

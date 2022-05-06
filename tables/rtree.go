@@ -207,10 +207,6 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 
 	defer stmt.Close()
 
-	// this should be updated to use go-whosonfirst-geojson-v2/geometry GeometryForFeature
-	// so that we're not translating between [][][]float64 and skleterjohn/geom things
-	// twice (20201214/thisisaaronland)
-
 	var mp orb.MultiPolygon
 
 	switch geom_type {
@@ -225,6 +221,10 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 
 	for _, poly := range mp {
 
+		// Store the geometry for each bounding box so we can use it to do
+		// raycasting and filter points in any interior rings. For example in
+		// whosonfirst/go-whosonfirst-spatial-sqlite
+		
 		bbox := poly.Bound()
 
 		sw := bbox.Min

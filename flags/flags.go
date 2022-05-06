@@ -1,3 +1,4 @@
+// package flags provides methods for working with whosonfirst/go-whosonfirst-flags -style flags.
 package flags
 
 import (
@@ -7,6 +8,8 @@ import (
 	"strings"
 )
 
+// ExistentialFlagsToQueryConditions converts 'flag_label' and 'str_labels' in a SQL query and its query arguments.
+// To do: Example arguments and output
 func ExistentialFlagsToQueryConditions(flag_label string, str_flags string) (string, []interface{}, error) {
 
 	conditions := make([]string, 0)
