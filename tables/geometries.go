@@ -146,13 +146,13 @@ func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive ID, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive ID, %w", err))
 	}
 
 	alt_label, err := properties.AltLabel(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive alt label, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive alt label, %w", err))
 	}
 
 	lastmod := properties.LastModified(f)
@@ -166,7 +166,7 @@ func (t *GeometriesTable) IndexFeature(ctx context.Context, db sqlite.Database, 
 	geojson_geom, err := geometry.Geometry(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive geometry, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive geometry, %w", err))
 	}
 
 	orb_geom := geojson_geom.Geometry()

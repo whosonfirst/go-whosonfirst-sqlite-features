@@ -27,13 +27,13 @@ func NewAncestorsTableWithDatabase(ctx context.Context, db sqlite.Database) (sql
 	t, err := NewAncestorsTable(ctx)
 
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to create ancestors table, %w", err)
 	}
 
 	err = t.InitializeTable(ctx, db)
 
 	if err != nil {
-		return nil, err
+		return nil, InitializeTableError(t, err)
 	}
 
 	return t, nil
@@ -86,19 +86,19 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive ID, %w", err)
+		return MissingPropertyError(t, "id", err)
 	}
 
 	conn, err := db.Conn()
 
 	if err != nil {
-		return fmt.Errorf("Failed to establish database connection, %w", err)
+		return DatabaseConnectionError(t, rer)
 	}
 
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return fmt.Errorf("Failed to begin transaction, %w", err)
+		return BeginTransactionError(t, err)
 	}
 
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
@@ -106,7 +106,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -114,7 +114,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	_, err = stmt.Exec(id)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
 	hierarchies := properties.Hierarchies(f)
@@ -135,7 +135,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 			stmt, err := tx.Prepare(sql)
 
 			if err != nil {
-				return err
+				return PrepareStatementError(t, err)
 			}
 
 			defer stmt.Close()
@@ -143,12 +143,18 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 			_, err = stmt.Exec(id, ancestor_id, ancestor_placetype, lastmod)
 
 			if err != nil {
-				return err
+				return ExecuteStatementError(t, err)
 			}
 
 		}
 
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }

@@ -86,7 +86,7 @@ func (t *ConcordancesTable) IndexFeature(ctx context.Context, db sqlite.Database
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive ID, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive ID, %w", err))
 	}
 
 	conn, err := db.Conn()

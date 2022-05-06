@@ -120,7 +120,7 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive ID, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive ID, %w", err))
 	}
 
 	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
@@ -142,7 +142,7 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	pt, err := properties.Placetype(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive placetype, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to derive placetype, %w", err))
 	}
 
 	co := properties.Country(f)

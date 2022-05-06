@@ -132,19 +132,19 @@ func (t *GeoJSONTable) IndexFeature(ctx context.Context, db sqlite.Database, f [
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to determine ID, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to determine ID, %w", err))
 	}
 
 	source, err := properties.Source(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to determine source, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to determine source, %w", err))
 	}
 
 	alt_label, err := properties.AltLabel(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to determine alt label, %w", err)
+		return WrapError(t, fmt.Errorf("Failed to determine alt label, %w", err))
 	}
 
 	lastmod := properties.LastModified(f)

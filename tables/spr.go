@@ -158,7 +158,7 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 	alt_label, err := properties.AltLabel(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "alt label", err)
 	}
 
 	var s spr.StandardPlacesResult
@@ -168,7 +168,7 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 		_s, err := spr.WhosOnFirstAltSPR(f)
 
 		if err != nil {
-			return err
+			return WrapError(t, fmt.Sprintf("Failed to generate SPR for alt geom, %w", err))
 		}
 
 		s = _s
@@ -178,7 +178,7 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 		_s, err := spr.WhosOnFirstSPR(f)
 
 		if err != nil {
-			return err
+			return WrapError(t, fmt.Sprintf("Failed to SPR, %w", err))
 		}
 
 		s = _s
@@ -246,19 +246,19 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 	conn, err := db.Conn()
 
 	if err != nil {
-		return err
+		return DatabaseConnectionError(t, err)
 	}
 
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return err
+		return BeginTransactionError(t, err)
 	}
 
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -266,10 +266,16 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 	_, err = stmt.Exec(args...)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }
 
 func int64ToString(ints []int64) string {

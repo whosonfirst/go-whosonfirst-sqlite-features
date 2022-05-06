@@ -142,7 +142,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	geom_type, err := geometry.Type(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive geometry type, %w", err)
+		return MissingPropertyError(t, "geometry type", err)
 	}
 
 	switch geom_type {
@@ -152,16 +152,11 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		return nil
 	}
 
-	conn, err := db.Conn()
-
-	if err != nil {
-		return err
-	}
 
 	wof_id, err := properties.Id(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive ID, %w", err)
+		return MissingPropertyError(t, "id", err)
 	}
 
 	alt_label := ""
@@ -171,7 +166,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		label, err := properties.AltLabel(f)
 
 		if err != nil {
-			return fmt.Errorf("Failed to derive alt label, %w", err)
+			return MissingProperty(t, "alt label", err)
 		}
 
 		alt_label = label
@@ -182,11 +177,17 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	geojson_geom, err := geometry.Geometry(f)
 
 	if err != nil {
-		return fmt.Errorf("Failed to derive geometry, %w", err)
+		return MissingPropertyError(t, "geometry", err)
 	}
 
 	orb_geom := geojson_geom.Geometry()
 
+	conn, err := db.Conn()
+
+	if err != nil {
+		return DatabaseConnectionError(t, err)
+	}
+	
 	tx, err := conn.Begin()
 
 	if err != nil {
@@ -202,7 +203,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -216,7 +217,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		mp = []orb.Polygon{orb_geom.(orb.Polygon)}
 	default:
 		// This should never happen (we check above) but just in case...
-		return fmt.Errorf("Invalid or unsupported geometry type, %s", geom_type)
+		return WrapError(t, fmt.Errorf("Invalid or unsupported geometry type, %s", geom_type))
 	}
 
 	for _, poly := range mp {
@@ -235,9 +236,15 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		_, err = stmt.Exec(sw.X(), ne.X(), sw.Y(), ne.Y(), wof_id, is_alt, alt_label, enc_geom, lastmod)
 
 		if err != nil {
-			return err
+			return ExecuteStatementError(t, err)
 		}
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }
