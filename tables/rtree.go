@@ -4,10 +4,10 @@ package tables
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
+	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/wkt"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
@@ -168,7 +168,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 
 	if is_alt {
 
-		label, err = properties.AltLabel(f)
+		label, err := properties.AltLabel(f)
 
 		if err != nil {
 			return fmt.Errorf("Failed to derive alt label, %w", err)
@@ -211,44 +211,28 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	// so that we're not translating between [][][]float64 and skleterjohn/geom things
 	// twice (20201214/thisisaaronland)
 
-	for _, poly := range polygons {
+	var mp orb.MultiPolygon
 
-		exterior_ring := poly.ExteriorRing()
-		bbox := exterior_ring.Bounds()
+	switch geom_type {
+	case "MultiPolygon":
+		mp = orb_geom.(orb.MultiPolygon)
+	case "Polygon":
+		mp = []orb.Polygon{orb_geom.(orb.Polygon)}
+	default:
+		// This should never happen (we check above) but just in case...
+		return fmt.Errorf("Invalid or unsupported geometry type, %s", geom_type)
+	}
+
+	for _, poly := range mp {
+
+		bbox := poly.Bound()
 
 		sw := bbox.Min
 		ne := bbox.Max
 
-		points := make([][][]float64, 0)
+		enc_geom := wkt.MarshalString(poly)
 
-		exterior_points := make([][]float64, 0)
-
-		for _, c := range exterior_ring.Vertices() {
-			pt := []float64{c.X, c.Y}
-			exterior_points = append(exterior_points, pt)
-		}
-
-		points = append(points, exterior_points)
-
-		for _, interior_ring := range poly.InteriorRings() {
-
-			interior_points := make([][]float64, 0)
-
-			for _, c := range interior_ring.Vertices() {
-				pt := []float64{c.X, c.Y}
-				interior_points = append(interior_points, pt)
-			}
-
-			points = append(points, interior_points)
-		}
-
-		points_enc, err := json.Marshal(points)
-
-		if err != nil {
-			return err
-		}
-
-		_, err = stmt.Exec(sw.X, ne.X, sw.Y, ne.Y, wof_id, is_alt, alt_label, string(points_enc), lastmod)
+		_, err = stmt.Exec(sw.X(), ne.X(), sw.Y(), ne.Y(), wof_id, is_alt, alt_label, enc_geom, lastmod)
 
 		if err != nil {
 			return err

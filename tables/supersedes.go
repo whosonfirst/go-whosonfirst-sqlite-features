@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/aaronland/go-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
-	"github.com/whosonfirst/go-whosonfirst-feature/properties"	
+	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
 )
 
