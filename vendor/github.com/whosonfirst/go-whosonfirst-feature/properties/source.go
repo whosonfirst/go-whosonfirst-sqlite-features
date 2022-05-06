@@ -8,14 +8,14 @@ import (
 func Source(body []byte) (string, error) {
 
 	var source string
-	
+
 	possible := []string{
 		"properties.src:alt_label",
 		"properties.src:geom",
 	}
 
 	for _, path := range possible {
-		
+
 		rsp := gjson.GetBytes(body, path)
 
 		if rsp.Exists() {

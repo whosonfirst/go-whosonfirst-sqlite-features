@@ -2,12 +2,12 @@ package tables
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"github.com/aaronland/go-sqlite"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features"
+	"github.com/whosonfirst/go-whosonfirst-spr/v2"	
 	_ "log"
 	"strconv"
 	"strings"
@@ -146,7 +146,7 @@ func (t *SPRTable) IndexRecord(ctx context.Context, db sqlite.Database, i interf
 
 func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byte) error {
 
-	is_alt := properties.IsAlt(f)
+	is_alt := alt.IsAlt(f)
 
 	if is_alt {
 
@@ -161,8 +161,7 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 		return err
 	}
 
-	// OH GOD... FIX ME
-	spr, err := f.SPR()
+	spr, err := spr.WhosOnFirstSPR(f)
 
 	if err != nil {
 		return err
