@@ -41,7 +41,7 @@ func NewNamesTableWithDatabase(ctx context.Context, db sqlite.Database) (sqlite.
 	err = t.InitializeTable(ctx, db)
 
 	if err != nil {
-		return nil, err
+		return nil, InitializeTableError(t, err)
 	}
 
 	return t, nil
@@ -105,44 +105,16 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		return nil
 	}
 
-	conn, err := db.Conn()
-
-	if err != nil {
-		return err
-	}
-
-	tx, err := conn.Begin()
-
-	if err != nil {
-		return err
-	}
-
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to derive ID, %w", err))
-	}
-
-	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
-
-	stmt, err := tx.Prepare(sql)
-
-	if err != nil {
-		return err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(id)
-
-	if err != nil {
-		return err
+		return MissingPropertyError(t, "id", err)
 	}
 
 	pt, err := properties.Placetype(f)
 
 	if err != nil {
-		return WrapError(t, fmt.Errorf("Failed to derive placetype, %w", err))
+		return MissingPropertyError(t, "placetype", err)
 	}
 
 	co := properties.Country(f)
@@ -150,19 +122,43 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	lastmod := properties.LastModified(f)
 	names := properties.Names(f)
 
+	conn, err := db.Conn()
+
+	if err != nil {
+		return DatabaseConnectionError(t, err)
+	}
+
+	tx, err := conn.Begin()
+
+	if err != nil {
+		return BeginTransactionError(t, err)
+	}
+
+	sql := fmt.Sprintf(`DELETE FROM %s WHERE id = ?`, t.Name())
+
+	stmt, err := tx.Prepare(sql)
+
+	if err != nil {
+		return PrepareStatementError(t, err)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(id)
+
+	if err != nil {
+		return ExecuteStatementError(t, err)
+	}
+
 	for tag, names := range names {
 
 		lt, err := tags.NewLangTag(tag)
 
 		if err != nil {
-			return err
+			return WrapError(t, fmt.Errorf("Failed to create new language tag for '%s', %w", tag, err))
 		}
 
 		for _, n := range names {
-
-			if err != nil {
-				return err
-			}
 
 			sql := fmt.Sprintf(`INSERT INTO %s (
 	    			id, placetype, country,
@@ -183,7 +179,7 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 			stmt, err := tx.Prepare(sql)
 
 			if err != nil {
-				return err
+				return PrepareStatementError(t, err)
 			}
 
 			defer stmt.Close()
@@ -191,11 +187,17 @@ func (t *NamesTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 			_, err = stmt.Exec(id, pt, co, lt.Language(), lt.ExtLang(), lt.Script(), lt.Region(), lt.Variant(), lt.Extension(), lt.PrivateUse(), n, lastmod)
 
 			if err != nil {
-				return err
+				return ExecuteStatementError(t, err)
 			}
 
 		}
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }

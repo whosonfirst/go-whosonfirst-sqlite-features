@@ -77,37 +77,37 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 	id, err := properties.Id(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "id", err)
 	}
 
 	placetype, err := properties.Placetype(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "placetype", err)
 	}
 
 	is_current, err := properties.IsCurrent(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "is current", err)
 	}
 
 	is_ceased, err := properties.IsCeased(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "is ceased", err)
 	}
 
 	is_deprecated, err := properties.IsDeprecated(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "is deprecated", err)
 	}
 
 	is_superseded, err := properties.IsSuperseded(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "is superseded", err)
 	}
 
 	names_all := make([]string, 0)
@@ -118,7 +118,7 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 	name, err := properties.Name(f)
 
 	if err != nil {
-		return err
+		return MissingPropertyError(t, "name", err)
 	}
 
 	names_all = append(names_all, name)
@@ -129,7 +129,7 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 		lt, err := tags.NewLangTag(tag)
 
 		if err != nil {
-			return err
+			return WrapError(t, fmt.Errorf("Failed to create new lang tag for '%s', %w", tag, err))
 		}
 
 		possible := make([]string, 0)
@@ -189,19 +189,19 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 	conn, err := db.Conn()
 
 	if err != nil {
-		return err
+		return DatabaseConnectionError(t, err)
 	}
 
 	tx, err := conn.Begin()
 
 	if err != nil {
-		return err
+		return BeginTransactionError(t, err)
 	}
 
 	s, err := tx.Prepare(fmt.Sprintf("DELETE FROM %s WHERE id = ?", t.Name()))
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer s.Close()
@@ -209,13 +209,13 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 	_, err = s.Exec(id)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
 	stmt, err := tx.Prepare(sql)
 
 	if err != nil {
-		return err
+		return PrepareStatementError(t, err)
 	}
 
 	defer stmt.Close()
@@ -223,8 +223,14 @@ func (t *SearchTable) IndexFeature(ctx context.Context, db sqlite.Database, f []
 	_, err = stmt.Exec(args...)
 
 	if err != nil {
-		return err
+		return ExecuteStatementError(t, err)
 	}
 
-	return tx.Commit()
+	err = tx.Commit()
+
+	if err != nil {
+		return CommitTransactionError(t, err)
+	}
+
+	return nil
 }
