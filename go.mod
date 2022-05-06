@@ -8,7 +8,6 @@ require (
 	github.com/tidwall/gjson v1.14.1
 	github.com/whosonfirst/go-whosonfirst-feature v0.0.23
 	github.com/whosonfirst/go-whosonfirst-flags v0.4.3
-	github.com/whosonfirst/go-whosonfirst-geojson-v2 v0.16.4
 	github.com/whosonfirst/go-whosonfirst-names v0.1.0
-	github.com/whosonfirst/go-whosonfirst-spr/v2 v2.1.0
+	github.com/whosonfirst/go-whosonfirst-spr/v2 v2.2.0
 )

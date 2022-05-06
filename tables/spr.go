@@ -161,12 +161,30 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 		return err
 	}
 
-	spr, err := spr.WhosOnFirstSPR(f)
+	var s spr.StandardPlacesResult
 
-	if err != nil {
-		return err
+	if is_alt {
+		
+		_s, err := spr.WhosOnFirstAltSPR(f)
+
+		if err != nil {
+			return err
+		}
+
+		s = _s
+		
+	} else {
+
+		_s, err := spr.WhosOnFirstSPR(f)
+
+		if err != nil {
+			return err
+		}
+
+		s = _s
+		
 	}
-
+	
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 		id, parent_id, name, placetype,
 		inception, cessation,
@@ -193,15 +211,15 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 		?
 		)`, t.Name()) // ON CONFLICT DO BLAH BLAH BLAH
 
-	superseded_by := int64ToString(spr.SupersededBy())
-	supersedes := int64ToString(spr.Supersedes())
-	belongs_to := int64ToString(spr.BelongsTo())
+	superseded_by := int64ToString(s.SupersededBy())
+	supersedes := int64ToString(s.Supersedes())
+	belongs_to := int64ToString(s.BelongsTo())
 
 	str_inception := ""
 	str_cessation := ""
 
-	inception := spr.Inception()
-	cessation := spr.Cessation()
+	inception := s.Inception()
+	cessation := s.Cessation()
 
 	if inception != nil {
 		str_inception = inception.String()
@@ -212,17 +230,17 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 	}
 
 	args := []interface{}{
-		spr.Id(), spr.ParentId(), spr.Name(), spr.Placetype(),
+		s.Id(), s.ParentId(), s.Name(), s.Placetype(),
 		str_inception, str_cessation,
-		spr.Country(), spr.Repo(),
-		spr.Latitude(), spr.Longitude(),
-		spr.MinLatitude(), spr.MinLongitude(),
-		spr.MaxLatitude(), spr.MaxLongitude(),
-		spr.IsCurrent().Flag(), spr.IsDeprecated().Flag(), spr.IsCeased().Flag(),
-		spr.IsSuperseded().Flag(), spr.IsSuperseding().Flag(),
+		s.Country(), s.Repo(),
+		s.Latitude(), s.Longitude(),
+		s.MinLatitude(), s.MinLongitude(),
+		s.MaxLatitude(), s.MaxLongitude(),
+		s.IsCurrent().Flag(), s.IsDeprecated().Flag(), s.IsCeased().Flag(),
+		s.IsSuperseded().Flag(), s.IsSuperseding().Flag(),
 		superseded_by, supersedes, belongs_to,
 		is_alt, alt_label,
-		spr.LastModified(),
+		s.LastModified(),
 	}
 
 	conn, err := db.Conn()
