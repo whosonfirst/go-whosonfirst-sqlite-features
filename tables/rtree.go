@@ -152,7 +152,6 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		return nil
 	}
 
-
 	wof_id, err := properties.Id(f)
 
 	if err != nil {
@@ -166,7 +165,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		label, err := properties.AltLabel(f)
 
 		if err != nil {
-			return MissingProperty(t, "alt label", err)
+			return MissingPropertyError(t, "alt label", err)
 		}
 
 		alt_label = label
@@ -187,7 +186,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 	if err != nil {
 		return DatabaseConnectionError(t, err)
 	}
-	
+
 	tx, err := conn.Begin()
 
 	if err != nil {
@@ -225,7 +224,7 @@ func (t *RTreeTable) IndexFeature(ctx context.Context, db sqlite.Database, f []b
 		// Store the geometry for each bounding box so we can use it to do
 		// raycasting and filter points in any interior rings. For example in
 		// whosonfirst/go-whosonfirst-spatial-sqlite
-		
+
 		bbox := poly.Bound()
 
 		sw := bbox.Min

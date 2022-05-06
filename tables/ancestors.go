@@ -92,7 +92,7 @@ func (t *AncestorsTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	conn, err := db.Conn()
 
 	if err != nil {
-		return DatabaseConnectionError(t, rer)
+		return DatabaseConnectionError(t, err)
 	}
 
 	tx, err := conn.Begin()

@@ -225,21 +225,5 @@ func RTreeTablesWithDatabaseAndOptions(ctx context.Context, db sqlite.Database, 
 
 	to_index = append(to_index, props)
 
-	geom_opts, err := DefaultGeometryTableOptions()
-
-	if err != nil {
-		return nil, err
-	}
-
-	geom_opts.IndexAltFiles = opts.IndexAltFiles
-
-	geom, err := NewGeometryTableWithDatabaseAndOptions(ctx, db, geom_opts)
-
-	if err != nil {
-		return nil, err
-	}
-
-	to_index = append(to_index, geom)
-
 	return to_index, nil
 }

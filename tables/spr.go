@@ -164,27 +164,27 @@ func (t *SPRTable) IndexFeature(ctx context.Context, db sqlite.Database, f []byt
 	var s spr.StandardPlacesResult
 
 	if is_alt {
-		
+
 		_s, err := spr.WhosOnFirstAltSPR(f)
 
 		if err != nil {
-			return WrapError(t, fmt.Sprintf("Failed to generate SPR for alt geom, %w", err))
+			return WrapError(t, fmt.Errorf("Failed to generate SPR for alt geom, %w", err))
 		}
 
 		s = _s
-		
+
 	} else {
 
 		_s, err := spr.WhosOnFirstSPR(f)
 
 		if err != nil {
-			return WrapError(t, fmt.Sprintf("Failed to SPR, %w", err))
+			return WrapError(t, fmt.Errorf("Failed to SPR, %w", err))
 		}
 
 		s = _s
-		
+
 	}
-	
+
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
 		id, parent_id, name, placetype,
 		inception, cessation,
