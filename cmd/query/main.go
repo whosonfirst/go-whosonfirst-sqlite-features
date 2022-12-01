@@ -1,12 +1,16 @@
 package main
 
 import (
+	_ "github.com/aaronland/go-sqlite-modernc"
+)
+
+import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-sqlite/database"
-	"github.com/aaronland/go-sqlite/query"
-	"github.com/whosonfirst/go-whosonfirst-sqlite-features/flags"
+	"github.com/aaronland/go-sqlite/v2"
+	"github.com/aaronland/go-sqlite/v2/query"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2/flags"
 	"log"
 	"os"
 	"strings"
@@ -14,8 +18,8 @@ import (
 
 func main() {
 
-	driver := flag.String("driver", "sqlite3", "")
-	var dsn = flag.String("dsn", ":memory:", "")
+	database_uri := flag.String("database-uri", "modernc://mem", "")
+
 	var is_current = flag.String("is-current", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to their 'mz:is_current' property. Multiple flags are evaluated as a nested 'OR' query.")
 	var is_ceased = flag.String("is-ceased", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as ceased. Multiple flags are evaluated as a nested 'OR' query.")
 	var is_deprecated = flag.String("is-deprecated", "", "A comma-separated list of valid existential flags (-1,0,1) to filter results according to whether or not they have been marked as deprecated. Multiple flags are evaluated as a nested 'OR' query.")
@@ -28,15 +32,15 @@ func main() {
 
 	ctx := context.Background()
 
-	db, err := database.NewDBWithDriver(ctx, *driver, *dsn)
+	db, err := sqlite.NewDatabase(ctx, *database_uri)
 
 	if err != nil {
-		log.Fatalf("Unable to create database (%s) because %s", *dsn, err)
+		log.Fatalf("Unable to create database (%s) because %s", *database_uri, err)
 	}
 
-	defer db.Close()
+	defer db.Close(ctx)
 
-	conn, err := db.Conn()
+	conn, err := db.Conn(ctx)
 
 	if err != nil {
 		log.Fatalf("Failed to connect to database, because %s", err)
