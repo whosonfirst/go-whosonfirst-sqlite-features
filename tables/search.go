@@ -10,10 +10,9 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-names/tags"
+	sql_tables "github.com/whosonfirst/go-whosonfirst-sql/tables"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
-
-const SEARCH_TABLE_NAME string = "search"
 
 type SearchTable struct {
 	features.FeatureTable
@@ -40,7 +39,7 @@ func NewSearchTableWithDatabase(ctx context.Context, db sqlite.Database) (sqlite
 func NewSearchTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := SearchTable{
-		name: SEARCH_TABLE_NAME,
+		name: sql_tables.SEARCH_TABLE_NAME,
 	}
 
 	return &t, nil
@@ -56,15 +55,8 @@ func (t *SearchTable) Name() string {
 }
 
 func (t *SearchTable) Schema() string {
-
-	schema := `CREATE VIRTUAL TABLE %s USING fts4(
-		id, placetype,
-		name, names_all, names_preferred, names_variant, names_colloquial,		
-		is_current, is_ceased, is_deprecated, is_superseded
-	);`
-
-	// so dumb...
-	return fmt.Sprintf(schema, t.Name())
+	schema, _ := sql_tables.LoadSchema("sqlite", sql_tables.SEARCH_TABLE_NAME)
+	return schema
 }
 
 func (t *SearchTable) IndexRecord(ctx context.Context, db sqlite.Database, i interface{}) error {

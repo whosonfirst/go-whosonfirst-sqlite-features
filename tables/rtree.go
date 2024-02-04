@@ -12,10 +12,9 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
+	sql_tables "github.com/whosonfirst/go-whosonfirst-sql/tables"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
-
-const RTREE_TABLE_NAME string = "rtree"
 
 type RTreeTableOptions struct {
 	IndexAltFiles bool
@@ -50,7 +49,7 @@ func NewRTreeTable(ctx context.Context) (sqlite.Table, error) {
 func NewRTreeTableWithOptions(ctx context.Context, opts *RTreeTableOptions) (sqlite.Table, error) {
 
 	t := RTreeTable{
-		name:    RTREE_TABLE_NAME,
+		name:    sql_tables.RTREE_TABLE_NAME,
 		options: opts,
 	}
 
@@ -108,20 +107,8 @@ func (t *RTreeTable) Schema() string {
 		Note: Auxiliary columns must come at the end of a table definition
 	*/
 
-	sql := `CREATE VIRTUAL TABLE %s USING rtree (
-		id,
-		min_x,
-		max_x,
-		min_y,
-		max_y,
-		+wof_id INTEGER,
-		+is_alt TINYINT,
-		+alt_label TEXT,
-		+geometry BLOB,
-		+lastmodified INTEGER
-	);`
-
-	return fmt.Sprintf(sql, t.Name())
+	schema, _ := sql_tables.LoadSchema("sqlite", sql_tables.RTREE_TABLE_NAME)
+	return schema
 }
 
 func (t *RTreeTable) InitializeTable(ctx context.Context, db sqlite.Database) error {

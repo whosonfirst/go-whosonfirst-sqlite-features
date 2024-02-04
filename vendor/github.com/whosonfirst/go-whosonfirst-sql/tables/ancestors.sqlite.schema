@@ -1,0 +1,6 @@
+CREATE TABLE {{ .Name }} (
+	id INTEGER NOT NULL,
+	ancestor_id INTEGER NOT NULL,
+	ancestor_placetype TEXT,
+	lastmodified INTEGER
+)
