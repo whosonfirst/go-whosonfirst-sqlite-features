@@ -1,0 +1,6 @@
+CREATE TABLE {{ .Name }} (
+	id INTEGER NOT NULL,
+	other_id INTEGER NOT NULL,
+	other_source TEXT,
+	lastmodified INTEGER
+)

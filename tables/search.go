@@ -10,8 +10,8 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-names/tags"
-	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 	sql_tables "github.com/whosonfirst/go-whosonfirst-sql/tables"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
 
 type SearchTable struct {

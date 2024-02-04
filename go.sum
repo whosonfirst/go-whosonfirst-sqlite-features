@@ -65,8 +65,8 @@ github.com/whosonfirst/go-whosonfirst-sources v0.1.0 h1:JuKLa6KWke22jBfJ1pM9WQHo
 github.com/whosonfirst/go-whosonfirst-sources v0.1.0/go.mod h1:EUMHyGzUmqPPxlMmOp+28BFeoBdxxE0HCKRd67lkqGM=
 github.com/whosonfirst/go-whosonfirst-spr/v2 v2.3.7 h1:1j4IMuVua4/NhqKm2ke16h2V5Z2XiLoOdXbjDrfZb0E=
 github.com/whosonfirst/go-whosonfirst-spr/v2 v2.3.7/go.mod h1:I2IqsIutlDrvYp37Xzwk4WGq+m/gLh+gEifiLmH0bac=
-github.com/whosonfirst/go-whosonfirst-sql v0.0.1 h1:qp3/YK0/rQULdzYQBqTcKu/fOWVjpgooEZgux1yZo2c=
-github.com/whosonfirst/go-whosonfirst-sql v0.0.1/go.mod h1:sQXkJTPfnxXbOPTCCxGjUydfQqATfEyO4xyxj2pEX3E=
+github.com/whosonfirst/go-whosonfirst-sql v0.0.2 h1:YkGkDxgeZiu4lhWFu4I/2f9uczgmwpW4wNV67xoRKAo=
+github.com/whosonfirst/go-whosonfirst-sql v0.0.2/go.mod h1:sQXkJTPfnxXbOPTCCxGjUydfQqATfEyO4xyxj2pEX3E=
 github.com/whosonfirst/go-whosonfirst-uri v1.3.0 h1:LYOVLqP9rWQxauYVkdw65j5LZxEi8OK0GHh/qCEpX4g=
 github.com/whosonfirst/go-whosonfirst-uri v1.3.0/go.mod h1:CuVygTCUpMG945MMvqHyqxvc/L5YkDaMrrVpRFr7ZxY=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=
