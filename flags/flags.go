@@ -3,9 +3,10 @@ package flags
 
 import (
 	"fmt"
-	"github.com/whosonfirst/go-whosonfirst-flags/existential"
 	"strconv"
 	"strings"
+
+	"github.com/whosonfirst/go-whosonfirst-flags/existential"
 )
 
 // ExistentialFlagsToQueryConditions converts 'flag_label' and 'str_labels' in a SQL query and its query arguments.

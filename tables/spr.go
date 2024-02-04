@@ -3,15 +3,18 @@ package tables
 import (
 	"context"
 	"fmt"
+	_ "log"
+	"strconv"
+	"strings"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-spr/v2"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
-	_ "log"
-	"strconv"
-	"strings"
 )
+
+const SPR_TABLE_NAME string = "spr"
 
 type SPRTableOptions struct {
 	IndexAltFiles bool
@@ -46,7 +49,7 @@ func NewSPRTable(ctx context.Context) (sqlite.Table, error) {
 func NewSPRTableWithOptions(ctx context.Context, opts *SPRTableOptions) (sqlite.Table, error) {
 
 	t := SPRTable{
-		name:    "spr",
+		name:    SPR_TABLE_NAME,
 		options: opts,
 	}
 

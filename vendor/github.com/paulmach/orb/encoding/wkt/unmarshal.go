@@ -1,7 +1,9 @@
 package wkt
 
 import (
+	"bytes"
 	"errors"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -18,138 +20,391 @@ var (
 
 	// ErrUnsupportedGeometry is returned when geometry type is not supported by this lib.
 	ErrUnsupportedGeometry = errors.New("wkt: unsupported geometry")
+
+	doubleParen = regexp.MustCompile(`\)[\s|\t]*\)([\s|\t]*,[\s|\t]*)\([\s|\t]*\(`)
+	singleParen = regexp.MustCompile(`\)([\s|\t]*,[\s|\t]*)\(`)
 )
 
 // UnmarshalPoint returns the point represented by the wkt string.
 // Will return ErrIncorrectGeometry if the wkt is not a point.
-func UnmarshalPoint(s string) (p orb.Point, err error) {
-	geom, err := Unmarshal(s)
+func UnmarshalPoint(s string) (orb.Point, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("POINT")) {
+		return orb.Point{}, ErrIncorrectGeometry
+	}
+
+	return unmarshalPoint(s)
+}
+
+func unmarshalPoint(s string) (orb.Point, error) {
+	s, err := trimSpaceBrackets(s[5:])
 	if err != nil {
 		return orb.Point{}, err
 	}
-	g, ok := geom.(orb.Point)
-	if !ok {
-		return orb.Point{}, ErrIncorrectGeometry
-	}
-	return g, nil
-}
 
-// UnmarshalMultiPoint returns the multi-point represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a multi-point.
-func UnmarshalMultiPoint(s string) (p orb.MultiPoint, err error) {
-	geom, err := Unmarshal(s)
+	tp, err := parsePoint(s)
 	if err != nil {
-		return nil, err
+		return orb.Point{}, err
 	}
 
-	g, ok := geom.(orb.MultiPoint)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// UnmarshalLineString returns the linestring represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a linestring.
-func UnmarshalLineString(s string) (p orb.LineString, err error) {
-	geom, err := Unmarshal(s)
-	if err != nil {
-		return nil, err
-	}
-	g, ok := geom.(orb.LineString)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// UnmarshalMultiLineString returns the multi-linestring represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a multi-linestring.
-func UnmarshalMultiLineString(s string) (p orb.MultiLineString, err error) {
-	geom, err := Unmarshal(s)
-	if err != nil {
-		return nil, err
-	}
-	g, ok := geom.(orb.MultiLineString)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// UnmarshalPolygon returns the polygon represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a polygon.
-func UnmarshalPolygon(s string) (p orb.Polygon, err error) {
-	geom, err := Unmarshal(s)
-	if err != nil {
-		return nil, err
-	}
-	g, ok := geom.(orb.Polygon)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// UnmarshalMultiPolygon returns the multi-polygon represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a multi-polygon.
-func UnmarshalMultiPolygon(s string) (p orb.MultiPolygon, err error) {
-	geom, err := Unmarshal(s)
-	if err != nil {
-		return nil, err
-	}
-	g, ok := geom.(orb.MultiPolygon)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// UnmarshalCollection returns the geometry collection represented by the wkt string.
-// Will return ErrIncorrectGeometry if the wkt is not a geometry collection.
-func UnmarshalCollection(s string) (p orb.Collection, err error) {
-	geom, err := Unmarshal(s)
-	if err != nil {
-		return orb.Collection{}, err
-	}
-	g, ok := geom.(orb.Collection)
-	if !ok {
-		return nil, ErrIncorrectGeometry
-	}
-	return g, nil
-}
-
-// trimSpaceBrackets trim space and brackets
-func trimSpaceBrackets(s string) string {
-	s = strings.Trim(s, " ")
-	if s[0] == '(' {
-		s = s[1:]
-	}
-	if s[len(s)-1] == ')' {
-		s = s[:len(s)-1]
-	}
-
-	return strings.Trim(s, " ")
+	return tp, nil
 }
 
 // parsePoint pase point by (x y)
 func parsePoint(s string) (p orb.Point, err error) {
-	ps := strings.Split(s, " ")
-	if len(ps) != 2 {
+	one, two, ok := cut(s, " ")
+	if !ok {
 		return orb.Point{}, ErrNotWKT
 	}
 
-	x, err := strconv.ParseFloat(ps[0], 64)
+	x, err := strconv.ParseFloat(one, 64)
 	if err != nil {
-		return orb.Point{}, err
+		return orb.Point{}, ErrNotWKT
 	}
 
-	y, err := strconv.ParseFloat(ps[1], 64)
+	y, err := strconv.ParseFloat(two, 64)
 	if err != nil {
-		return orb.Point{}, err
+		return orb.Point{}, ErrNotWKT
 	}
 
 	return orb.Point{x, y}, nil
+}
+
+// UnmarshalMultiPoint returns the multi-point represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-point.
+func UnmarshalMultiPoint(s string) (orb.MultiPoint, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("MULTIPOINT")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalMultiPoint(s)
+}
+
+func unmarshalMultiPoint(s string) (orb.MultiPoint, error) {
+	if strings.EqualFold(s, "MULTIPOINT EMPTY") {
+		return orb.MultiPoint{}, nil
+	}
+
+	s, err := trimSpaceBrackets(s[10:])
+	if err != nil {
+		return nil, err
+	}
+
+	count := strings.Count(s, ",")
+	mp := make(orb.MultiPoint, 0, count+1)
+
+	err = splitOnComma(s, func(p string) error {
+		p, err := trimSpaceBrackets(p)
+		if err != nil {
+			return err
+		}
+
+		tp, err := parsePoint(p)
+		if err != nil {
+			return err
+		}
+
+		mp = append(mp, tp)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return mp, nil
+}
+
+// UnmarshalLineString returns the linestring represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a linestring.
+func UnmarshalLineString(s string) (orb.LineString, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("LINESTRING")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalLineString(s)
+}
+
+func unmarshalLineString(s string) (orb.LineString, error) {
+	if strings.EqualFold(s, "LINESTRING EMPTY") {
+		return orb.LineString{}, nil
+	}
+
+	s, err := trimSpaceBrackets(s[10:])
+	if err != nil {
+		return nil, err
+	}
+
+	count := strings.Count(s, ",")
+	ls := make(orb.LineString, 0, count+1)
+
+	err = splitOnComma(s, func(p string) error {
+		tp, err := parsePoint(p)
+		if err != nil {
+			return err
+		}
+
+		ls = append(ls, tp)
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return ls, nil
+}
+
+// UnmarshalMultiLineString returns the multi-linestring represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-linestring.
+func UnmarshalMultiLineString(s string) (orb.MultiLineString, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("MULTILINESTRING")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalMultiLineString(s)
+}
+
+func unmarshalMultiLineString(s string) (orb.MultiLineString, error) {
+	if strings.EqualFold(s, "MULTILINESTRING EMPTY") {
+		return orb.MultiLineString{}, nil
+	}
+
+	s, err := trimSpaceBrackets(s[15:])
+	if err != nil {
+		return nil, err
+	}
+
+	var tmls orb.MultiLineString
+	err = splitByRegexpYield(
+		s,
+		singleParen,
+		func(i int) {
+			tmls = make(orb.MultiLineString, 0, i)
+		},
+		func(ls string) error {
+			ls, err := trimSpaceBrackets(ls)
+			if err != nil {
+				return err
+			}
+
+			count := strings.Count(ls, ",")
+			tls := make(orb.LineString, 0, count+1)
+
+			err = splitOnComma(ls, func(p string) error {
+				tp, err := parsePoint(p)
+				if err != nil {
+					return err
+				}
+
+				tls = append(tls, tp)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			tmls = append(tmls, tls)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return tmls, nil
+}
+
+// UnmarshalPolygon returns the polygon represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a polygon.
+func UnmarshalPolygon(s string) (orb.Polygon, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("POLYGON")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalPolygon(s)
+}
+
+func unmarshalPolygon(s string) (orb.Polygon, error) {
+	if strings.EqualFold(s, "POLYGON EMPTY") {
+		return orb.Polygon{}, nil
+	}
+
+	s, err := trimSpaceBrackets(s[7:])
+	if err != nil {
+		return nil, err
+	}
+
+	var poly orb.Polygon
+	err = splitByRegexpYield(
+		s,
+		singleParen,
+		func(i int) {
+			poly = make(orb.Polygon, 0, i)
+		},
+		func(r string) error {
+			r, err := trimSpaceBrackets(r)
+			if err != nil {
+				return err
+			}
+
+			count := strings.Count(r, ",")
+			ring := make(orb.Ring, 0, count+1)
+
+			err = splitOnComma(r, func(p string) error {
+				tp, err := parsePoint(p)
+				if err != nil {
+					return err
+				}
+				ring = append(ring, tp)
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			poly = append(poly, ring)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return poly, nil
+}
+
+// UnmarshalMultiPolygon returns the multi-polygon represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a multi-polygon.
+func UnmarshalMultiPolygon(s string) (orb.MultiPolygon, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("MULTIPOLYGON")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalMultiPolygon(s)
+}
+
+func unmarshalMultiPolygon(s string) (orb.MultiPolygon, error) {
+	if strings.EqualFold(s, "MULTIPOLYGON EMPTY") {
+		return orb.MultiPolygon{}, nil
+	}
+
+	s, err := trimSpaceBrackets(s[12:])
+	if err != nil {
+		return nil, err
+	}
+
+	var mpoly orb.MultiPolygon
+	err = splitByRegexpYield(
+		s,
+		doubleParen,
+		func(i int) {
+			mpoly = make(orb.MultiPolygon, 0, i)
+		},
+		func(poly string) error {
+			poly, err := trimSpaceBrackets(poly)
+			if err != nil {
+				return err
+			}
+
+			var tpoly orb.Polygon
+			err = splitByRegexpYield(
+				poly,
+				singleParen,
+				func(i int) {
+					tpoly = make(orb.Polygon, 0, i)
+				},
+				func(r string) error {
+					r, err := trimSpaceBrackets(r)
+					if err != nil {
+						return err
+					}
+
+					count := strings.Count(r, ",")
+					tr := make(orb.Ring, 0, count+1)
+
+					err = splitOnComma(r, func(s string) error {
+						tp, err := parsePoint(s)
+						if err != nil {
+							return err
+						}
+
+						tr = append(tr, tp)
+						return nil
+					})
+					if err != nil {
+						return err
+					}
+
+					tpoly = append(tpoly, tr)
+					return nil
+				},
+			)
+			if err != nil {
+				return err
+			}
+
+			mpoly = append(mpoly, tpoly)
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return mpoly, nil
+}
+
+// UnmarshalCollection returns the geometry collection represented by the wkt string.
+// Will return ErrIncorrectGeometry if the wkt is not a geometry collection.
+func UnmarshalCollection(s string) (orb.Collection, error) {
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
+	if !bytes.HasPrefix(prefix, []byte("GEOMETRYCOLLECTION")) {
+		return nil, ErrIncorrectGeometry
+	}
+
+	return unmarshalCollection(s)
+}
+
+func unmarshalCollection(s string) (orb.Collection, error) {
+	if strings.EqualFold(s, "GEOMETRYCOLLECTION EMPTY") {
+		return orb.Collection{}, nil
+	}
+
+	if len(s) == 18 { // just GEOMETRYCOLLECTION
+		return nil, ErrNotWKT
+	}
+
+	geometries := splitGeometryCollection(s[18:])
+	if len(geometries) == 0 {
+		return orb.Collection{}, nil
+	}
+
+	c := make(orb.Collection, 0, len(geometries))
+	for _, g := range geometries {
+		if len(g) == 0 {
+			continue
+		}
+
+		tg, err := Unmarshal(g)
+		if err != nil {
+			return nil, err
+		}
+
+		c = append(c, tg)
+	}
+
+	return c, nil
 }
 
 // splitGeometryCollection split GEOMETRYCOLLECTION to more geometry
@@ -162,7 +417,7 @@ func splitGeometryCollection(s string) (r []string) {
 			stack = append(stack, v)
 			continue
 		}
-		if v >= 'A' && v < 'Z' {
+		if ('A' <= v && v < 'Z') || ('a' <= v && v < 'z') {
 			t := string(stack)
 			r = append(r, t[:len(t)-1])
 			stack = make([]rune, 0)
@@ -179,140 +434,177 @@ func splitGeometryCollection(s string) (r []string) {
 }
 
 // Unmarshal return a geometry by parsing the WKT string.
-func Unmarshal(s string) (geom orb.Geometry, err error) {
-	s = strings.ToUpper(strings.Trim(s, " "))
-	switch {
-	case strings.Contains(s, "GEOMETRYCOLLECTION"):
-		if s == "GEOMETRYCOLLECTION EMPTY" {
-			return orb.Collection{}, nil
-		}
-		s = strings.Replace(s, "GEOMETRYCOLLECTION", "", -1)
-		c := orb.Collection{}
-		ms := splitGeometryCollection(s)
-		if len(ms) == 0 {
-			return nil, err
-		}
-		for _, v := range ms {
-			if len(v) == 0 {
-				continue
-			}
-			g, err := Unmarshal(v)
-			if err != nil {
-				return nil, err
-			}
-			c = append(c, g)
-		}
-		geom = c
+func Unmarshal(s string) (orb.Geometry, error) {
+	var (
+		g   orb.Geometry
+		err error
+	)
 
-	case strings.Contains(s, "MULTIPOINT"):
-		if s == "MULTIPOINT EMPTY" {
-			return orb.MultiPoint{}, nil
-		}
-		s = strings.Replace(s, "MULTIPOINT", "", -1)
-		s = trimSpaceBrackets(s)
-		ps := strings.Split(s, ",")
-		mp := orb.MultiPoint{}
-		for _, p := range ps {
-			tp, err := parsePoint(trimSpaceBrackets(p))
-			if err != nil {
-				return nil, err
-			}
-			mp = append(mp, tp)
-		}
-		geom = mp
+	s = trimSpace(s)
+	prefix := upperPrefix(s)
 
-	case strings.Contains(s, "POINT"):
-		s = strings.Replace(s, "POINT", "", -1)
-		tp, err := parsePoint(trimSpaceBrackets(s))
-		if err != nil {
-			return nil, err
-		}
-		geom = tp
-
-	case strings.Contains(s, "MULTILINESTRING"):
-		if s == "MULTILINESTRING EMPTY" {
-			return orb.MultiLineString{}, nil
-		}
-		s = strings.Replace(s, "MULTILINESTRING", "", -1)
-		ml := orb.MultiLineString{}
-		for _, l := range strings.Split(trimSpaceBrackets(s), "),(") {
-			tl := orb.LineString{}
-			for _, p := range strings.Split(trimSpaceBrackets(l), ",") {
-				tp, err := parsePoint(trimSpaceBrackets(p))
-				if err != nil {
-					return nil, err
-				}
-				tl = append(tl, tp)
-			}
-			ml = append(ml, tl)
-		}
-		geom = ml
-
-	case strings.Contains(s, "LINESTRING"):
-		if s == "LINESTRING EMPTY" {
-			return orb.LineString{}, nil
-		}
-		s = strings.Replace(s, "LINESTRING", "", -1)
-		s = trimSpaceBrackets(s)
-		ps := strings.Split(s, ",")
-		ls := orb.LineString{}
-		for _, p := range ps {
-			tp, err := parsePoint(trimSpaceBrackets(p))
-			if err != nil {
-				return nil, err
-			}
-			ls = append(ls, tp)
-		}
-		geom = ls
-
-	case strings.Contains(s, "MULTIPOLYGON"):
-		if s == "MULTIPOLYGON EMPTY" {
-			return orb.MultiPolygon{}, nil
-		}
-		s = strings.Replace(s, "MULTIPOLYGON", "", -1)
-		mpol := orb.MultiPolygon{}
-		for _, ps := range strings.Split(trimSpaceBrackets(s), ")),((") {
-			pol := orb.Polygon{}
-			for _, ls := range strings.Split(trimSpaceBrackets(ps), "),(") {
-				ring := orb.Ring{}
-				for _, p := range strings.Split(ls, ",") {
-					tp, err := parsePoint(trimSpaceBrackets(p))
-					if err != nil {
-						return nil, err
-					}
-					ring = append(ring, tp)
-				}
-				pol = append(pol, ring)
-			}
-			mpol = append(mpol, pol)
-		}
-		geom = mpol
-
-	case strings.Contains(s, "POLYGON"):
-		if s == "POLYGON EMPTY" {
-			return orb.Polygon{}, nil
-		}
-		s = strings.Replace(s, "POLYGON", "", -1)
-		s = trimSpaceBrackets(s)
-
-		rs := strings.Split(s, "),(")
-		pol := make(orb.Polygon, 0, len(rs))
-		for _, r := range rs {
-			ps := strings.Split(trimSpaceBrackets(r), ",")
-			ring := orb.Ring{}
-			for _, p := range ps {
-				tp, err := parsePoint(trimSpaceBrackets(p))
-				if err != nil {
-					return nil, err
-				}
-				ring = append(ring, tp)
-			}
-			pol = append(pol, ring)
-		}
-		geom = pol
-	default:
+	if bytes.HasPrefix(prefix, []byte("POINT")) {
+		g, err = unmarshalPoint(s)
+	} else if bytes.HasPrefix(prefix, []byte("LINESTRING")) {
+		g, err = unmarshalLineString(s)
+	} else if bytes.HasPrefix(prefix, []byte("POLYGON")) {
+		g, err = unmarshalPolygon(s)
+	} else if bytes.HasPrefix(prefix, []byte("MULTIPOINT")) {
+		g, err = unmarshalMultiPoint(s)
+	} else if bytes.HasPrefix(prefix, []byte("MULTILINESTRING")) {
+		g, err = unmarshalMultiLineString(s)
+	} else if bytes.HasPrefix(prefix, []byte("MULTIPOLYGON")) {
+		g, err = unmarshalMultiPolygon(s)
+	} else if bytes.HasPrefix(prefix, []byte("GEOMETRYCOLLECTION")) {
+		g, err = unmarshalCollection(s)
+	} else {
 		return nil, ErrUnsupportedGeometry
 	}
 
-	return
+	if err != nil {
+		return nil, err
+	}
+
+	return g, nil
+}
+
+// splitByRegexpYield splits the input by the regexp. The first callback can
+// be used to initialize an array with the size of the result, the second
+// is the callback with the matches.
+// We use a yield function because it was faster/used less memory than
+// allocating an array of the results.
+func splitByRegexpYield(s string, re *regexp.Regexp, set func(int), yield func(string) error) error {
+	indexes := re.FindAllStringSubmatchIndex(s, -1)
+	set(len(indexes) + 1)
+	start := 0
+	for _, element := range indexes {
+		err := yield(s[start:element[2]])
+		if err != nil {
+			return err
+		}
+		start = element[3]
+	}
+
+	return yield(s[start:])
+}
+
+// splitOnComma is optimized to split on the regex [\s|\t|\n]*,[\s|\t|\n]*
+// i.e. comma with possible spaces on each side. e.g. '  ,  '
+// We use a yield function because it was faster/used less memory than
+// allocating an array of the results.
+func splitOnComma(s string, yield func(s string) error) error {
+	// in WKT points are separtated by commas, coordinates in points are separted by spaces
+	// e.g. 1 2,3 4,5 6,7 81 2,5 4
+	// we want to split this and find each point.
+
+	// at is right after the previous space-comma-space match.
+	// once a space-comma-space match is found, we go from 'at' to the start
+	// of the match, that's the split that needs to be returned.
+	var at int
+
+	var start int // the start of a space-comma-space section
+
+	// a space starts a section, we need to see a comma for it to be a valid section
+	var sawSpace, sawComma bool
+	for i := 0; i < len(s); i++ {
+		if s[i] == ',' {
+			if !sawSpace {
+				sawSpace = true
+				start = i
+			}
+			sawComma = true
+			continue
+		}
+
+		if v := s[i]; v == ' ' || v == '\t' || v == '\n' {
+			if !sawSpace {
+				sawSpace = true
+				start = i
+			}
+			continue
+		}
+
+		if sawComma {
+			err := yield(s[at:start])
+			if err != nil {
+				return err
+			}
+			at = i
+		}
+		sawSpace = false
+		sawComma = false
+	}
+
+	return yield(s[at:])
+}
+
+// trimSpaceBrackets trim space and brackets
+func trimSpaceBrackets(s string) (string, error) {
+	s = trimSpace(s)
+	if len(s) == 0 {
+		return s, nil
+	}
+
+	if s[0] == '(' {
+		s = s[1:]
+	} else {
+		return "", ErrNotWKT
+	}
+
+	if s[len(s)-1] == ')' {
+		s = s[:len(s)-1]
+	} else {
+		return "", ErrNotWKT
+	}
+
+	return trimSpace(s), nil
+}
+
+func trimSpace(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
+	var start, end int
+
+	for start = 0; start < len(s); start++ {
+		if v := s[start]; v != ' ' && v != '\t' && v != '\n' {
+			break
+		}
+	}
+
+	for end = len(s) - 1; end >= 0; end-- {
+		if v := s[end]; v != ' ' && v != '\t' && v != '\n' {
+			break
+		}
+	}
+
+	if start >= end {
+		return ""
+	}
+
+	return s[start : end+1]
+}
+
+// gets the ToUpper case of the first 20 chars.
+// This is to determin the type without doing a full strings.ToUpper
+func upperPrefix(s string) []byte {
+	prefix := make([]byte, 20)
+	for i := 0; i < 20 && i < len(s); i++ {
+		if 'a' <= s[i] && s[i] <= 'z' {
+			prefix[i] = s[i] - ('a' - 'A')
+		} else {
+			prefix[i] = s[i]
+		}
+	}
+
+	return prefix
+}
+
+// coppied here from strings.Cut so we don't require go1.18
+func cut(s, sep string) (before, after string, found bool) {
+	if i := strings.Index(s, sep); i >= 0 {
+		return s[:i], s[i+len(sep):], true
+	}
+	return s, "", false
 }

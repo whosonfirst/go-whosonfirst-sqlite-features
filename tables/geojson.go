@@ -3,11 +3,14 @@ package tables
 import (
 	"context"
 	"fmt"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
+
+const GEOJSON_TABLE_NAME string = "geojson"
 
 type GeoJSONTableOptions struct {
 	IndexAltFiles          bool
@@ -78,7 +81,7 @@ func NewGeoJSONTable(ctx context.Context) (sqlite.Table, error) {
 func NewGeoJSONTableWithOptions(ctx context.Context, opts *GeoJSONTableOptions) (sqlite.Table, error) {
 
 	t := GeoJSONTable{
-		name:    "geojson",
+		name:    GEOJSON_TABLE_NAME,
 		options: opts,
 	}
 

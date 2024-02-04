@@ -8,12 +8,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/aaronland/go-sqlite/v2"
-	"github.com/aaronland/go-sqlite/v2/query"
-	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2/flags"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/aaronland/go-sqlite/v2"
+	"github.com/aaronland/go-sqlite/v2/query"
+	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2/flags"
 )
 
 func main() {

@@ -5,6 +5,7 @@ package tables
 import (
 	"context"
 	"fmt"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/wkt"
@@ -12,8 +13,9 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
-	_ "log"
 )
+
+const RTREE_TABLE_NAME string = "rtree"
 
 type RTreeTableOptions struct {
 	IndexAltFiles bool
@@ -48,7 +50,7 @@ func NewRTreeTable(ctx context.Context) (sqlite.Table, error) {
 func NewRTreeTableWithOptions(ctx context.Context, opts *RTreeTableOptions) (sqlite.Table, error) {
 
 	t := RTreeTable{
-		name:    "rtree",
+		name:    RTREE_TABLE_NAME,
 		options: opts,
 	}
 

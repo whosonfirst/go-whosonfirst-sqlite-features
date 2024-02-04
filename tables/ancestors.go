@@ -3,12 +3,15 @@ package tables
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
-	"strings"
 )
+
+const ANCESTORS_TABLE_NAME string = "ancestors"
 
 type AncestorsTable struct {
 	features.FeatureTable
@@ -42,7 +45,7 @@ func NewAncestorsTableWithDatabase(ctx context.Context, db sqlite.Database) (sql
 func NewAncestorsTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := AncestorsTable{
-		name: "ancestors",
+		name: ANCESTORS_TABLE_NAME,
 	}
 
 	return &t, nil

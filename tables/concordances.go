@@ -3,11 +3,14 @@ package tables
 import (
 	"context"
 	"fmt"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
+
+const CONCORDANCES_TABLE_NAME string = "concordances"
 
 type ConcordancesTable struct {
 	features.FeatureTable
@@ -41,7 +44,7 @@ func NewConcordancesTableWithDatabase(ctx context.Context, db sqlite.Database) (
 func NewConcordancesTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := ConcordancesTable{
-		name: "concordances",
+		name: CONCORDANCES_TABLE_NAME,
 	}
 
 	return &t, nil

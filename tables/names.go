@@ -10,6 +10,8 @@ import (
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
 
+const NAMES_TABLE_NAME string = "names"
+
 type NamesTable struct {
 	features.FeatureTable
 	name string
@@ -50,7 +52,7 @@ func NewNamesTableWithDatabase(ctx context.Context, db sqlite.Database) (sqlite.
 func NewNamesTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := NamesTable{
-		name: "names",
+		name: NAMES_TABLE_NAME,
 	}
 
 	return &t, nil

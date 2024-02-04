@@ -3,14 +3,17 @@ package tables
 import (
 	"context"
 	"fmt"
+	_ "log"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/paulmach/orb/encoding/wkt"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/geometry"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
-	_ "log"
 )
+
+const GEOMETRIES_TABLE_NAME string = "geometries"
 
 type GeometriesTableOptions struct {
 	IndexAltFiles bool
@@ -51,7 +54,7 @@ func NewGeometriesTable(ctx context.Context) (sqlite.Table, error) {
 func NewGeometriesTableWithOptions(ctx context.Context, opts *GeometriesTableOptions) (sqlite.Table, error) {
 
 	t := GeometriesTable{
-		name:    "geometries",
+		name:    GEOMETRIES_TABLE_NAME,
 		options: opts,
 	}
 

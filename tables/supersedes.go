@@ -3,11 +3,14 @@ package tables
 import (
 	"context"
 	"fmt"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
+
+const SUPERSEDES_TABLE_NAME string = "supersedes"
 
 type SupersedesTable struct {
 	features.FeatureTable
@@ -34,7 +37,7 @@ func NewSupersedesTableWithDatabase(ctx context.Context, db sqlite.Database) (sq
 func NewSupersedesTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := SupersedesTable{
-		name: "supersedes",
+		name: SUPERSEDES_TABLE_NAME,
 	}
 
 	return &t, nil

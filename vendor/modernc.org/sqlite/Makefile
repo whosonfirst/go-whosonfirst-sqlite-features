@@ -201,11 +201,12 @@ cpu: clean
 
 edit:
 	@touch log
-	@if [ -f "Session.vim" ]; then gvim -S & else gvim -p Makefile *.go & fi
+	@if [ -f "Session.vim" ]; then gvim -S & else gvim -p Makefile all_test.go sqlite.go & fi
 
 editor:
 	gofmt -l -s -w *.go
 	go install -v ./...
+	go test -c -o /dev/null -tags=cgo,cgotest
 
 internalError:
 	egrep -ho '"internal error.*"' *.go | sort | cat -n

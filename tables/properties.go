@@ -3,12 +3,15 @@ package tables
 import (
 	"context"
 	"fmt"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/tidwall/gjson"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
 )
+
+const PROPERTIES_TABLE_NAME string = "properties"
 
 type PropertiesTableOptions struct {
 	IndexAltFiles bool
@@ -77,7 +80,7 @@ func NewPropertiesTable(ctx context.Context) (sqlite.Table, error) {
 func NewPropertiesTableWithOptions(ctx context.Context, opts *PropertiesTableOptions) (sqlite.Table, error) {
 
 	t := PropertiesTable{
-		name:    "properties",
+		name:    PROPERTIES_TABLE_NAME,
 		options: opts,
 	}
 

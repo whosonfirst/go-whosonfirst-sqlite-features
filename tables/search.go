@@ -3,14 +3,17 @@ package tables
 import (
 	"context"
 	"fmt"
+	_ "log"
+	"strings"
+
 	"github.com/aaronland/go-sqlite/v2"
 	"github.com/whosonfirst/go-whosonfirst-feature/alt"
 	"github.com/whosonfirst/go-whosonfirst-feature/properties"
 	"github.com/whosonfirst/go-whosonfirst-names/tags"
 	"github.com/whosonfirst/go-whosonfirst-sqlite-features/v2"
-	_ "log"
-	"strings"
 )
+
+const SEARCH_TABLE_NAME string = "search"
 
 type SearchTable struct {
 	features.FeatureTable
@@ -37,7 +40,7 @@ func NewSearchTableWithDatabase(ctx context.Context, db sqlite.Database) (sqlite
 func NewSearchTable(ctx context.Context) (sqlite.Table, error) {
 
 	t := SearchTable{
-		name: "search",
+		name: SEARCH_TABLE_NAME,
 	}
 
 	return &t, nil
