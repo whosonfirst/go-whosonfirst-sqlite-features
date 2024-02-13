@@ -3,4 +3,6 @@ CREATE TABLE {{ .Name }} (
 	ancestor_id INTEGER NOT NULL,
 	ancestor_placetype TEXT,
 	lastmodified INTEGER
-)
+);
+
+CREATE UNIQUE INDEX `by_ancestor` ON {{ .Name }} (`id`, `ancestor_id`);

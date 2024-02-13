@@ -5,4 +5,7 @@ CREATE TABLE {{ .Name }} (
 	is_alt BOOLEAN,
 	alt_label TEXT,
 	lastmodified INTEGER
-)
+);
+
+CREATE UNIQUE INDEX `id_alt` ON {{ .Name }} (`id`, `alt_label`);
+CREATE INDEX `by_source` ON {{ .Name }} (`source`);
