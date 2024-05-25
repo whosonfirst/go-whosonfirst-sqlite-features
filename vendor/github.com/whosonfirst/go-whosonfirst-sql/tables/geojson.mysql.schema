@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS geojson (
+      id BIGINT UNSIGNED,
+      alt VARCHAR(255) NOT NULL,
+      body LONGBLOB NOT NULL,
+      lastmodified INT NOT NULL,
+      UNIQUE KEY id_alt (id, alt),
+      KEY lastmodified (lastmodified)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -46,8 +46,8 @@ github.com/sfomuseum/go-edtf v1.1.1/go.mod h1:1rP0EJZ/84j3HO80vGcnG2T9MFBDAFyTNt
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/tidwall/gjson v1.17.0 h1:/Jocvlh98kcTfpN2+JzGQWQcqrPQwDrVEMApx/M5ZwM=
-github.com/tidwall/gjson v1.17.0/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
+github.com/tidwall/gjson v1.17.1 h1:wlYEnwqAHgzmhNUFfw7Xalt2JzQvsMx2Se4PcoFCT/U=
+github.com/tidwall/gjson v1.17.1/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/match v1.1.1 h1:+Ho715JplO36QYgwN9PGYNhgZvoUSc9X2c80KVTi+GA=
 github.com/tidwall/match v1.1.1/go.mod h1:eRSPERbgtNPcGhD8UCthc6PmLEQXEWd3PRB5JTxsfmM=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
@@ -65,8 +65,8 @@ github.com/whosonfirst/go-whosonfirst-sources v0.1.0 h1:JuKLa6KWke22jBfJ1pM9WQHo
 github.com/whosonfirst/go-whosonfirst-sources v0.1.0/go.mod h1:EUMHyGzUmqPPxlMmOp+28BFeoBdxxE0HCKRd67lkqGM=
 github.com/whosonfirst/go-whosonfirst-spr/v2 v2.3.7 h1:1j4IMuVua4/NhqKm2ke16h2V5Z2XiLoOdXbjDrfZb0E=
 github.com/whosonfirst/go-whosonfirst-spr/v2 v2.3.7/go.mod h1:I2IqsIutlDrvYp37Xzwk4WGq+m/gLh+gEifiLmH0bac=
-github.com/whosonfirst/go-whosonfirst-sql v0.0.3 h1:yyAdKO8bjuhnFsV0HHeAprd7HExpZo54/7K2+10kHSg=
-github.com/whosonfirst/go-whosonfirst-sql v0.0.3/go.mod h1:sQXkJTPfnxXbOPTCCxGjUydfQqATfEyO4xyxj2pEX3E=
+github.com/whosonfirst/go-whosonfirst-sql v0.0.4 h1:dMFnRrSEIR1t3MHAMkGt2v/y9J0U4npIRbO5+Ssod/s=
+github.com/whosonfirst/go-whosonfirst-sql v0.0.4/go.mod h1:sQXkJTPfnxXbOPTCCxGjUydfQqATfEyO4xyxj2pEX3E=
 github.com/whosonfirst/go-whosonfirst-uri v1.3.0 h1:LYOVLqP9rWQxauYVkdw65j5LZxEi8OK0GHh/qCEpX4g=
 github.com/whosonfirst/go-whosonfirst-uri v1.3.0/go.mod h1:CuVygTCUpMG945MMvqHyqxvc/L5YkDaMrrVpRFr7ZxY=
 github.com/xdg-go/pbkdf2 v1.0.0/go.mod h1:jrpuAogTd400dnrH08LKmI/xc1MbPOebTwRqcT5RDeI=

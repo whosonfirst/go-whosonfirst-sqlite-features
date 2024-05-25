@@ -1,19 +1,17 @@
 module github.com/whosonfirst/go-whosonfirst-sqlite-features/v2
 
-go 1.21.3
-
-toolchain go1.22.0
+go 1.22
 
 require (
 	github.com/aaronland/go-sqlite-modernc v0.0.3
 	github.com/aaronland/go-sqlite/v2 v2.2.0
 	github.com/paulmach/orb v0.11.1
-	github.com/tidwall/gjson v1.17.0
+	github.com/tidwall/gjson v1.17.1
 	github.com/whosonfirst/go-whosonfirst-feature v0.0.27
 	github.com/whosonfirst/go-whosonfirst-flags v0.5.1
 	github.com/whosonfirst/go-whosonfirst-names v0.1.0
 	github.com/whosonfirst/go-whosonfirst-spr/v2 v2.3.7
-	github.com/whosonfirst/go-whosonfirst-sql v0.0.3
+	github.com/whosonfirst/go-whosonfirst-sql v0.0.4
 )
 
 require (
