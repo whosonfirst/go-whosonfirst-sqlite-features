@@ -2,6 +2,7 @@ package tables
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/aaronland/go-sqlite/v2"
@@ -128,6 +129,12 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 		return fmt.Errorf("Failed to prepare spelunker document, %w", err)
 	}
 
+	enc_doc, err := json.Marshal(doc)
+
+	if err != nil {
+		return fmt.Errorf("Failed to marshal spelunker document, %w", err)
+	}
+
 	conn, err := db.Conn(ctx)
 
 	if err != nil {
@@ -154,9 +161,9 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 
 	defer stmt.Close()
 
-	str_body := string(f)
+	str_doc := string(enc_doc)
 
-	_, err = stmt.Exec(id, doc, lastmod)
+	_, err = stmt.Exec(id, str_doc, lastmod)
 
 	if err != nil {
 		return ExecuteStatementError(t, err)
