@@ -34,12 +34,6 @@ type SpelunkerTable struct {
 	options *SpelunkerTableOptions
 }
 
-type SpelunkerRow struct {
-	Id           int64
-	Body         string
-	LastModified int64
-}
-
 func NewSpelunkerTableWithDatabase(ctx context.Context, db sqlite.Database) (sqlite.Table, error) {
 
 	opts, err := DefaultSpelunkerTableOptions()
@@ -111,7 +105,7 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 
 	is_alt := alt.IsAlt(f)
 
-	if is_alt {
+	if is_alt && !t.options.IndexAltFiles {
 		return nil
 	}
 
@@ -119,6 +113,23 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 
 	if err != nil {
 		return MissingPropertyError(t, "id", err)
+	}
+
+	source, err := properties.Source(f)
+
+	if err != nil {
+
+		if !t.options.AllowMissingSourceGeom {
+			return MissingPropertyError(t, "source", err)
+		}
+
+		source = "unknown"
+	}
+
+	alt_label, err := properties.AltLabel(f)
+
+	if err != nil {
+		return MissingPropertyError(t, "alt label", err)
 	}
 
 	lastmod := properties.LastModified(f)
@@ -148,9 +159,9 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 	}
 
 	sql := fmt.Sprintf(`INSERT OR REPLACE INTO %s (
-		id, body, lastmodified
+		id, body, source, is_alt, alt_label, lastmodified
 	) VALUES (
-		?, ?, ?
+		?, ?, ?, ?, ?, ?
 	)`, t.Name())
 
 	stmt, err := tx.Prepare(sql)
@@ -163,7 +174,7 @@ func (t *SpelunkerTable) IndexFeature(ctx context.Context, db sqlite.Database, f
 
 	str_doc := string(enc_doc)
 
-	_, err = stmt.Exec(id, str_doc, lastmod)
+	_, err = stmt.Exec(id, str_doc, source, is_alt, alt_label, lastmod)
 
 	if err != nil {
 		return ExecuteStatementError(t, err)
