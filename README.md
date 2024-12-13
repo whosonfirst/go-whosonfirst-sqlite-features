@@ -4,6 +4,8 @@ Go package for implementing the `aaronland/go-sqlite.Table` interface used to in
 
 This package only defines packages that implement the `aaronland/go-sqlite.Table` interface and does not do any actual database table indexing. That is handled by the `whosonfirst/go-whosonfirst-sqlite-feature-index` package.
 
+## Deprecation notice
+
 This package has been deprecated. It has been superseded by the [whosonfirst/go-whosonfirst-database](https://github.com/whosonfirst/go-whosonfirst-database) package. It will be archived in early 2025.
 
 ## Documentation
