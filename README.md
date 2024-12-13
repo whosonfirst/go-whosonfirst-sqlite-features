@@ -6,7 +6,7 @@ This package only defines packages that implement the `aaronland/go-sqlite.Table
 
 ## Deprecation notice
 
-This package has been deprecated. It has been superseded by the [whosonfirst/go-whosonfirst-database](https://github.com/whosonfirst/go-whosonfirst-database) package. It will be archived in early 2025.
+This package has been deprecated. It has been superseded by the [whosonfirst/go-whosonfirst-database](https://github.com/whosonfirst/go-whosonfirst-database) package.
 
 ## Documentation
 
